@@ -1,0 +1,21 @@
+html,body {
+  background-color: #333;
+  color: #fff;
+}
+
+.section {
+  padding: 8rem 0 7rem;
+  text-align: center;
+}
+
+textarea { 
+  background-color: #444;
+  color: #fff;
+  height: auto; 
+  width: auto; 
+}
+
+input,
+select {
+  color: #333;
+}
