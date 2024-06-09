@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ . '/../include/dbconnect.php');
+require_once(__DIR__ . '/../include/head.php');
 
 if (isset($_REQUEST['op']) && $_REQUEST['op'] == 'create') {
     $stmt = $mysqli->prepare('INSERT INTO category (name) VALUES (?)');
@@ -18,7 +18,7 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
 <head>
     <meta charset="UTF-8">
     <title>Edit video</title>
-    <meta name="description" content="Small site to play quick quizes.">
+    <meta name="description" content="Small site to handle your YouTube channel.">
     <meta name="author" content="Daniel Persson">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +34,7 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
                 <div class="one-half column">
                     <h3>Category</h3>
                     <div class="row">
-                        <a class="button" href="index.php">Home</a>
+                        <a class="button" href="listVideos.php">Home</a>
                         <a class="button" href="block.php">Block editor</a>
                     </div>
                     <div class="row">
