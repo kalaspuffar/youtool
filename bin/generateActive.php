@@ -8,7 +8,7 @@ $videos = $result->fetch_all(MYSQLI_ASSOC);
 
 foreach ($videos as $video) {
     $description = generateDescription($video['id']);
-    $stmt = $mysqli->prepare('UPDATE video SET description = ?, generated = true WHERE id = ?');
+    $stmt = $mysqli->prepare('UPDATE video SET description = ?, generated = true, published = false WHERE id = ?');
     $stmt->bind_param("si", $description, $video['id']);
     $stmt->execute();
 }

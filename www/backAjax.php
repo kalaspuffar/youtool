@@ -4,8 +4,8 @@ require_once(__DIR__ . '/../include/head.php');
 $data = json_decode(file_get_contents('php://input'));
 
 if (isset($data->op) && isset($data->videoId) && $data->op == 'activate') {
-    $stmt = $mysqli->prepare('UPDATE video SET active = !active WHERE id = ?');
-    $stmt->bind_param("i", $data->videoId);
+    $stmt = $mysqli->prepare('UPDATE video SET active = !active WHERE id = ? AND userId = ?');
+    $stmt->bind_param("ii", $data->videoId, $user['id']);
     $stmt->execute();
     echo '{}';
     exit;
@@ -20,8 +20,8 @@ if (isset($data->op) && isset($data->videoId) && $data->op == 'generate') {
     exit;
 }
 
-if (isset($data->op) && isset($data->videoId) && isset($data->userId) && $data->op == 'load') {
-    $videoData = loadVideo($data->videoId, $data->userId);
+if (isset($data->op) && isset($data->videoId) && $data->op == 'load') {
+    $videoData = loadVideo($data->videoId, $user['id']);
     $arr = [
         "description" => $videoData->items[0]->snippet->description
     ];
@@ -30,9 +30,9 @@ if (isset($data->op) && isset($data->videoId) && isset($data->userId) && $data->
 }
 
 
-if (isset($data->op) && isset($data->videoId) && isset($data->userId) && $data->op == 'publish') {
-    $result = submitDescription($data->videoId, $data->userId);
-    echo $result;
+if (isset($data->op) && isset($data->videoId) && $data->op == 'publish') {
+    $result = submitDescription($data->videoId, $user['id']);
+    echo json_encode($result);
     exit;
 }
 
@@ -72,8 +72,8 @@ if (!isset($data->videoId) || !is_numeric($data->videoId)) {
     die("No videoId supplied");
 }
 if (isset($data->description)) {
-    $stmt = $mysqli->prepare('UPDATE video SET description = ? WHERE id = ?');
-    $stmt->bind_param("si", $data->description, $data->videoId);
+    $stmt = $mysqli->prepare('UPDATE video SET description = ? WHERE id = ? AND userId = ?');
+    $stmt->bind_param("sii", $data->description, $data->videoId, $user['id']);
     $stmt->execute();
     echo '{"id":' . $data->videoId . '}';
     exit;

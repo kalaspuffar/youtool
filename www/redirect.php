@@ -64,7 +64,6 @@ if (
         if (isset($tokenData->refresh_token)) {
             $query = 'UPDATE users SET access_token = ?, refresh_token = ?, expire_time = DATE_ADD(NOW(), INTERVAL ? SECOND), write_access = ?, auth_key = ? WHERE channel_id = ?';
         }
-
     } else {
         $query = 'INSERT INTO users (access_token, expire_time, write_access, auth_key, channel_id) VALUES (?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
         if (isset($tokenData->refresh_token)) {

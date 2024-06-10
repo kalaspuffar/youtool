@@ -1,12 +1,11 @@
 <?php
-
 require_once(__DIR__ . '/../include/dbconnect.php');
 
 $stmt = $mysqli->prepare('SELECT * FROM block WHERE override_categories = true AND changed = true');
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result->num_rows > 0) {
-    $stmt = $mysqli->prepare('UPDATE video SET generated = false, submitted = false');
+    $stmt = $mysqli->prepare('UPDATE video SET generated = false');
     $stmt->execute();    
 } else {
     $stmt = $mysqli->prepare(
@@ -22,11 +21,13 @@ if ($result->num_rows > 0) {
         array_push($categories, $categoryRes['categoryId']);
     }
     
-    $stmt = $mysqli->prepare(
-        'UPDATE video SET generated = false, submitted = false' .
-        ' WHERE id IN (SELECT videoId FROM category_to_video WHERE categoryId IN (' . implode(',', $categories) . '))'
-    );
-    $stmt->execute();    
+    if (count($categories) > 0) {
+        $stmt = $mysqli->prepare(
+            'UPDATE video SET generated = false' .
+            ' WHERE id IN (SELECT videoId FROM category_to_video WHERE categoryId IN (' . implode(',', $categories) . '))'
+        );    
+        $stmt->execute();
+    }
 }
 
 $stmt = $mysqli->prepare(

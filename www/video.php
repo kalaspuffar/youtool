@@ -15,19 +15,19 @@ $categories = fetchAssocAll($stmt, 'id');
 $stmt = $mysqli->prepare(
     'SELECT v.*, GROUP_CONCAT(c.categoryId) as categories FROM ' . 
     'video as v LEFT JOIN category_to_video as c ON v.id = c.videoId ' .
-    'WHERE v.youtubeId = ?'
+    'WHERE v.youtubeId = ? AND userId = ?'
 );
 
-$stmt->bind_param("s", $videoId);
+$stmt->bind_param("si", $videoId, $user['id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_assoc();
 if (!isset($data['id'])) {
-    $stmt = $mysqli->prepare('INSERT INTO video (youtubeId, active) VALUES (?, 0)');
-    $stmt->bind_param("s", $videoId);
+    $stmt = $mysqli->prepare('INSERT INTO video (youtubeId, userId, active) VALUES (?, ?, 0)');
+    $stmt->bind_param("si", $videoId, $user['id']);
     $stmt->execute();
-    $stmt = $mysqli->prepare('SELECT * FROM video WHERE youtubeId = ?');
-    $stmt->bind_param("s", $videoId);
+    $stmt = $mysqli->prepare('SELECT * FROM video WHERE youtubeId = ? AND userId = ?');
+    $stmt->bind_param("si", $videoId, $user['id']);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
@@ -150,7 +150,6 @@ if (!isset($data['id'])) {
         function loadVideo() {
             const data = {
                 'videoId': '<?php echo $data["youtubeId"] ?>',
-                'userId': <?php echo $user["id"] ?>,
                 'op': 'load'
             }
             fetch("backAjax.php", {
@@ -191,7 +190,6 @@ if (!isset($data['id'])) {
         function publishVideo() {
             const data = {
                 'videoId': <?php echo $data["id"] ?>,
-                'userId': <?php echo $user["id"] ?>,
                 'op': 'publish'
             }
             fetch("backAjax.php", {

@@ -5,11 +5,12 @@ use youtool;
 
 CREATE TABLE video (
     id int NOT NULL AUTO_INCREMENT,
+    userId int NOT NULL,
     youtubeId varchar(60) NOT NULL,
     description text,
-    generated boolean,
-    submitted boolean,
-    active boolean,
+    generated BOOLEAN NOT NULL DEFAULT 0,
+    published BOOLEAN NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
 );
 
@@ -24,10 +25,10 @@ CREATE TABLE block (
     type varchar(60) NOT NULL,
     startTime TIMESTAMP,
     endTime TIMESTAMP,
-    override_categories boolean,
+    override_categories BOOLEAN NOT NULL DEFAULT 0,
     snippet text,
-    active boolean,
-    changed boolean,
+    active BOOLEAN NOT NULL DEFAULT 0,
+    changed BOOLEAN NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -57,7 +58,7 @@ CREATE TABLE users (
     access_token VARCHAR(255) NOT NULL,
     refresh_token VARCHAR(255) NOT NULL,
     expire_time TIMESTAMP,
-    write_access BOOLEAN,
+    write_access BOOLEAN NOT NULL DEFAULT 0,
     payed_until TIMESTAMP,
     auth_key VARCHAR(40),
     PRIMARY KEY (id)

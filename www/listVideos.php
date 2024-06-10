@@ -43,7 +43,8 @@ require_once(__DIR__ . '/../include/head.php');
                         </div>
                         <?php
                         if ($filter == "unconfig") {
-                            $stmt = $mysqli->prepare('SELECT youtubeId FROM video');
+                            $stmt = $mysqli->prepare('SELECT youtubeId FROM video WHERE userId = ?');
+                            $stmt->bind_param("i", $user['id']);
                             $stmt->execute();
                             $result = $stmt->get_result();
                             $items = $result->fetch_all(MYSQLI_ASSOC);
@@ -85,12 +86,12 @@ require_once(__DIR__ . '/../include/head.php');
                                 }    
                             }    
                         } else {
-                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ?');
+                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND userId = ?');
                             $active = 1;
                             if (isset($_GET['filter']) && $_GET['filter'] == 'inactive') {
                                 $active = 0;
                             }
-                            $stmt->bind_param("i", $active);
+                            $stmt->bind_param("ii", $active, $user['id']);
                             $stmt->execute();
                             $result = $stmt->get_result();
                             $items = $result->fetch_all(MYSQLI_ASSOC);
