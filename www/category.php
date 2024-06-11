@@ -2,12 +2,13 @@
 require_once(__DIR__ . '/../include/head.php');
 
 if (isset($_REQUEST['op']) && $_REQUEST['op'] == 'create') {
-    $stmt = $mysqli->prepare('INSERT INTO category (name) VALUES (?)');
-    $stmt->bind_param("s", $_REQUEST['categoryName']);
+    $stmt = $mysqli->prepare('INSERT INTO category (name, userId) VALUES (?, ?)');
+    $stmt->bind_param("si", $_REQUEST['categoryName'], $user['id']);
     $stmt->execute();
 }
 
-$stmt = $mysqli->prepare('SELECT * FROM category');
+$stmt = $mysqli->prepare('SELECT * FROM category WHERE userId = ?');
+$stmt->bind_param("i", $user['id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
@@ -34,8 +35,9 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
                 <div class="one-half column">
                     <h3>Category</h3>
                     <div class="row">
-                        <a class="button" href="listVideos.php">Home</a>
+                        <a class="button" href="listVideos.php">List videos</a>
                         <a class="button" href="block.php">Block editor</a>
+                        <a class="button" href="comments.php">List comments</a>
                     </div>
                     <div class="row">
                         <form action="" method="POST" name="categoryForm">

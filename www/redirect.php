@@ -32,6 +32,9 @@ if (
         die('FAILED TO LOGIN!');
     }    
     $tokenData = json_decode($tokenResult);
+    if (!isset($tokenData->access_token)) {
+        die('FAILED TO LOGIN!');
+    }
 
     $options = array(
         'http' => array(
@@ -46,7 +49,8 @@ if (
     $channelResult = file_get_contents('https://www.googleapis.com/youtube/v3/channels?mine=true', false, $context);
     if ($channelResult === false) {
         die('FAILED TO LOGIN!');
-    }    
+    }
+    
     $channelData = json_decode($channelResult);
     $channelId = $channelData->items[0]->id;
 
@@ -60,15 +64,12 @@ if (
     $stmt->execute();
     $result = $stmt->get_result();
     if ($result->num_rows > 0) {        
-        $query = 'UPDATE users SET access_token = ?, expire_time = DATE_ADD(NOW(), INTERVAL ? SECOND), write_access = ?, auth_key = ? WHERE channel_id = ?';
+        $query = 'UPDATE users SET auth_key = ? WHERE channel_id = ?';
         if (isset($tokenData->refresh_token)) {
             $query = 'UPDATE users SET access_token = ?, refresh_token = ?, expire_time = DATE_ADD(NOW(), INTERVAL ? SECOND), write_access = ?, auth_key = ? WHERE channel_id = ?';
         }
     } else {
-        $query = 'INSERT INTO users (access_token, expire_time, write_access, auth_key, channel_id) VALUES (?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
-        if (isset($tokenData->refresh_token)) {
-            $query = 'INSERT INTO users (access_token, refresh_token, expire_time, write_access, auth_key, channel_id) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
-        }
+        $query = 'INSERT INTO users (access_token, refresh_token, expire_time, write_access, auth_key, channel_id) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
     }
     $stmt = $mysqli->prepare($query);
     if (isset($tokenData->refresh_token)) {
@@ -81,10 +82,7 @@ if (
             $channelId
         );
     } else {
-        $stmt->bind_param("siiss", 
-            $tokenData->access_token,
-            $tokenData->expires_in,
-            $writeAccess,
+        $stmt->bind_param("ss", 
             $authKey,
             $channelId
         );

@@ -1,5 +1,10 @@
 <?php
 require_once(__DIR__ . '/../include/head.php');
+
+$stmt = $mysqli->prepare('SELECT * FROM category WHERE userId = ?');
+$stmt->bind_param("i", $user['id']);
+$stmt->execute();
+$categories = fetchAssocAll($stmt, 'id');
 ?>
 
 <!DOCTYPE html>
@@ -24,20 +29,39 @@ require_once(__DIR__ . '/../include/head.php');
                     <div class="u-full-width column">
                         <h2>List videos</h2>
 
+                        <h5>Update to write access:</h5>
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
+                            <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
+                        </a><br/>
+
                         <div class="row">
                             <a class="button" href="category.php">Categories</a>
                             <a class="button" href="block.php">Block editor</a>
+                            <a class="button" href="comments.php">List comments</a>
                         </div>
 
                         <?php 
                         $filter = isset($_GET["filter"]) ? $_GET["filter"] : "";
+                        $selectedCategory = isset($_GET["category"]) ? $_GET["category"] : "";
                         ?>
                         <div class="row">
                             <form method="GET" action="#">
                                 <select name="filter" onchange="javascript:submit()">
                                     <option value="">Active</option>
                                     <option <?php echo $filter == "inactive" ? "selected" : "" ?> value="inactive">Not Active</option>
+                                    <option <?php echo $filter == "generating" ? "selected" : "" ?> value="generating">Not Generated</option>
+                                    <option <?php echo $filter == "publishing" ? "selected" : "" ?> value="publishing">Not Published</option>
                                     <option <?php echo $filter == "unconfig" ? "selected" : "" ?> value="unconfig">Not Configured</option>
+                                </select>
+
+                                <select name="category" onchange="javascript:submit()">
+                                    <option value="">Category</option>
+                                    <?php
+                                        foreach ($categories as $categoryKey => $category) {
+                                            $selected = $categoryKey == $selectedCategory ? 'selected' : '';
+                                            echo '<option ' . $selected . ' value="' . $categoryKey . '">' . $category["name"] . '</option>';
+                                        }
+                                    ?>
                                 </select>
                             </form>
                         </div>
@@ -53,46 +77,42 @@ require_once(__DIR__ . '/../include/head.php');
                                 array_push($configuredVideos, $video["youtubeId"]);
                             }                            
 
-                            $nextToken = '';
-                            while($nextToken !== false) {
+                            $videoList = file_get_contents(__DIR__ . '/../data/videos_' . $user['id'] . '.json');
 
-                                $options = array(
-                                    'http' => array(
-                                        'method'  => "GET",
-                                        'header' => "Content-Type: application/json\r\n" .
-                                                    "Content-Length: 0\r\n" .
-                                                    "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                                                    "User-Agent: YouTool/0.1\r\n"
-                                    ),
-                                );
-                                $context = stream_context_create($options);
-                                
-                                $channelVideoList = $user['channel_id'];
-                                if (substr($user['channel_id'], 0, 2) == 'UC') {
-                                    $channelVideoList = 'UU' . substr($user['channel_id'], 2);
-                                }
-
-                                $videos = file_get_contents('https://content.googleapis.com/youtube/v3/playlistItems?playlistId=' . $channelVideoList . '&maxResults=50&part=contentDetails&pageToken=' . $nextToken, false, $context);                           
-
-                                $decoded = json_decode($videos);                            
-                                $nextToken = isset($decoded->nextPageToken) ? $decoded->nextPageToken : false;
-                                foreach ($decoded->items as $video) {
-                                    if (in_array($video->contentDetails->videoId, $configuredVideos)) continue;
-                                    ?>
-                                    <a href="video.php?videoId=<?php echo $video->contentDetails->videoId ?>">
-                                        <img src="https://i.ytimg.com/vi/<?php echo $video->contentDetails->videoId ?>/default.jpg"/>
-                                    </a>
-                                    <?php
-                                }    
+                            foreach (json_decode($videoList) as $video) {
+                                if (in_array($video->contentDetails->videoId, $configuredVideos)) continue;
+                                ?>
+                                <a href="video.php?videoId=<?php echo $video->contentDetails->videoId ?>">
+                                    <img src="https://i.ytimg.com/vi/<?php echo $video->contentDetails->videoId ?>/default.jpg"/>
+                                </a>
+                                <?php
                             }    
                         } else {
-                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND userId = ?');
                             $active = 1;
                             if (isset($_GET['filter']) && $_GET['filter'] == 'inactive') {
                                 $active = 0;
                             }
-                            $stmt->bind_param("ii", $active, $user['id']);
-                            $stmt->execute();
+                            if (isset($_GET['filter']) && $_GET['filter'] == 'generating') {
+                                $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND generated = false AND userId = ?');
+                                $stmt->bind_param("i", $user['id']);
+                                $stmt->execute();    
+                            } else if (isset($_GET['filter']) && $_GET['filter'] == 'publishing') {
+                                $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND published = false AND userId = ?');
+                                $stmt->bind_param("i", $user['id']);
+                                $stmt->execute();    
+                            } else if ($selectedCategory == '') {
+                                $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND userId = ?');
+                                $stmt->bind_param("ii", $active, $user['id']);
+                                $stmt->execute();    
+                            } else {
+                                $stmt = $mysqli->prepare(
+                                    'SELECT * FROM video WHERE active = ? AND userId = ? AND id IN (' .
+                                        'SELECT videoId FROM category_to_video WHERE categoryId = ?' .
+                                    ')'
+                                );
+                                $stmt->bind_param("iii", $active, $user['id'], $selectedCategory);
+                                $stmt->execute();
+                            }
                             $result = $stmt->get_result();
                             $items = $result->fetch_all(MYSQLI_ASSOC);
                             foreach ($items as $video) {

@@ -21,9 +21,6 @@
                         <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline">
                             <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
                         </a>
-                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
-                            <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
-                        </a>
                     </div>
                 </div>
                 <div class="one-half column">

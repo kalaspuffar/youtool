@@ -70,17 +70,18 @@ function getUserAccess($userId) {
     return false;
 }
 
-function generateDescription($id) {
+function generateDescription($id, $userId) {
     global $mysqli;
 
     $blocks = [];
-    $stmt = $mysqli->prepare('SELECT * FROM block WHERE override_categories = true AND active = true AND type NOT IN ("header", "footer")');
+    $stmt = $mysqli->prepare('SELECT * FROM block WHERE override_categories = true AND active = true AND userId = ? AND type NOT IN ("header", "footer")');
+    $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     array_push($blocks, ...$result->fetch_all(MYSQLI_ASSOC));
 
-    $stmt = $mysqli->prepare('SELECT * FROM block WHERE id IN (SELECT blockId FROM video_to_block WHERE videoId = ?)');
-    $stmt->bind_param("i", $id);
+    $stmt = $mysqli->prepare('SELECT * FROM block WHERE userId = ? AND id IN (SELECT blockId FROM video_to_block WHERE videoId = ?)');
+    $stmt->bind_param("ii", $userId, $id);
     $stmt->execute();
     $result = $stmt->get_result();
     array_push($blocks, ...$result->fetch_all(MYSQLI_ASSOC));
@@ -98,9 +99,10 @@ function generateDescription($id) {
     
     if (count($categories) > 0) {
         $stmt = $mysqli->prepare(
-            'SELECT * FROM block WHERE id IN ' . 
+            'SELECT * FROM block WHERE userId = ? AND id IN ' . 
             '(SELECT blockId FROM category_to_block WHERE categoryId in (' . implode(',', $categories) . '))'
         );
+        $stmt->bind_param("i", $userId);        
         $stmt->execute();
         $result = $stmt->get_result();
         array_push($blocks, ...$result->fetch_all(MYSQLI_ASSOC));    
@@ -120,6 +122,7 @@ function generateDescription($id) {
 }
 
 function loadVideo($youtubeId, $userId) {
+    global $mysqli;
     $user = getUserAccess($userId);
 
     if ($user === false) {
@@ -145,7 +148,26 @@ function loadVideo($youtubeId, $userId) {
         false, 
         $context
     );
-    return json_decode($result);
+
+    if ($result === false) {
+        return [
+            "message" => "Failed fetching video."
+        ];
+    }
+
+    $videoData = json_decode($result);
+
+    $stmt = $mysqli->prepare('UPDATE video SET title = ?, description = ?, youtubeCategoryId = ? WHERE youtubeId = ? AND userId = ?');
+    $stmt->bind_param("ssssi", 
+        $videoData->items[0]->snippet->title, 
+        $videoData->items[0]->snippet->description, 
+        $videoData->items[0]->snippet->categoryId,
+        $youtubeId, 
+        $userId
+    );
+    $stmt->execute();
+
+    return $videoData;
 }
 
 function submitDescription($id, $userId) {
@@ -163,20 +185,24 @@ function submitDescription($id, $userId) {
         return ["message" => "Feature requires a subscription"];
     }
 
-    $stmt = $mysqli->prepare('SELECT youtubeId, description FROM video WHERE id = ? AND userId = ?');
+    $stmt = $mysqli->prepare('SELECT * FROM video WHERE id = ? AND userId = ?');
     $stmt->bind_param("ii", $id, $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     $video = $result->fetch_assoc();
 
-    $videoDataFromYoutube = loadVideo($video["youtubeId"], $userId);
+    if (empty($video["title"]) || empty($video["youtubeCategoryId"])) {
+        $videoDataFromYoutube = loadVideo($video["youtubeId"], $userId);
+        $video['title'] = $videoDataFromYoutube->items[0]->snippet->title;
+        $video['youtubeCategoryId'] = $videoDataFromYoutube->items[0]->snippet->categoryId;
+    }
 
     $data = [
         "id" => $video["youtubeId"],
         "snippet" => [
-            "title" => $videoDataFromYoutube->items[0]->snippet->title,
+            "title" => $video["title"],
             "description" => $video["description"],
-            "categoryId" => $videoDataFromYoutube->items[0]->snippet->categoryId
+            "categoryId" => $video["youtubeCategoryId"]
         ]
     ];
     $postdata = json_encode($data);

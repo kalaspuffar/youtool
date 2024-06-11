@@ -8,7 +8,8 @@ $headerSnippet = '';
 $footerId = -1;
 $footerSnippet = '';    
 
-$stmt = $mysqli->prepare('SELECT * FROM category');
+$stmt = $mysqli->prepare('SELECT * FROM category WHERE userId = ?');
+$stmt->bind_param("i", $user['id']);
 $stmt->execute();
 $categories = fetchAssocAll($stmt, 'id');
 
@@ -32,8 +33,8 @@ if (!isset($data['id'])) {
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
 } else {
-    $stmt = $mysqli->prepare('SELECT b.id, b.type, b.snippet FROM block as b, video_to_block as vb WHERE vb.videoId = ? AND vb.blockId = b.id');
-    $stmt->bind_param("i", $data["id"]);
+    $stmt = $mysqli->prepare('SELECT b.id, b.type, b.snippet FROM block as b, video_to_block as vb WHERE vb.videoId = ? AND b.userId = ? AND vb.blockId = b.id');
+    $stmt->bind_param("ii", $data["id"], $user['id']);
     $stmt->execute();
     $blockData = fetchAssocAll($stmt, 'type');
     $headerId = isset($blockData['header']['id']) ? $blockData['header']['id'] : -1;
@@ -63,9 +64,10 @@ if (!isset($data['id'])) {
         <div class="container">
             <h3>Edit video: <?php $videoId ?></h3>
             <div class="row">
-                <a class="button" href="listVideos.php">Home</a>
+                <a class="button" href="listVideos.php">List videos</a>
                 <a class="button" href="category.php">Categories</a>
                 <a class="button" href="block.php">Block editor</a>
+                <a class="button" href="comments.php">List comments</a>
             </div>
 
             <div class="row">
@@ -78,9 +80,11 @@ if (!isset($data['id'])) {
             <div class="row">
                 <div class="one-half column">
                     <div class="u-full-width column">
-                        <h4>Description</h4>
-                        <textarea id="videoDesc" rows="29" class="u-full-width"><?php echo $data["description"] ?></textarea>
+                        <h4>Video details</h4>
+                        <textarea id="videoTitle" rows="2" class="u-full-width"><?php echo $data["title"] ?></textarea>
+                        <textarea id="videoDesc" rows="29" class="u-full-width" <?php echo $data['active'] ? 'disabled' : '' ?>><?php echo $data["description"] ?></textarea>
                     </div>
+                    <iframe width="450" height="253" src="https://www.youtube.com/embed/<?php echo $videoId ?>"frameborder="0" allowfullscreen></iframe>
                 </div>
                 <div class="one-half column">
                     <div class="u-full-width column">
@@ -126,6 +130,7 @@ if (!isset($data['id'])) {
         const generateVideoEl = document.getElementById('generateVideo');
         const publishVideoEl = document.getElementById('publishVideo');
 
+        const videoTitleEl = document.getElementById('videoTitle');
         const videoDescEl = document.getElementById('videoDesc');
         const headerEl = document.getElementById('header');
         const footerEl = document.getElementById('footer');
@@ -135,8 +140,9 @@ if (!isset($data['id'])) {
         activateVideoEl.addEventListener('click', activateVideo.bind());
         generateVideoEl.addEventListener('click', generateVideo.bind());
         publishVideoEl.addEventListener('click', publishVideo.bind());
-
         
+        videoTitleEl.addEventListener('keyup', function() {delay(videoTitleEl, videoTitleSave.bind())});
+        videoTitleEl.addEventListener('paste', function() {delay(videoTitleEl, videoTitleSave.bind())});
         videoDescEl.addEventListener('keyup', function() {delay(videoDescEl, videoDescSave.bind())});
         videoDescEl.addEventListener('paste', function() {delay(videoDescEl, videoDescSave.bind())});
         headerEl.addEventListener('keyup', function() {delay(headerEl, headerSave.bind())});
@@ -144,8 +150,7 @@ if (!isset($data['id'])) {
         footerEl.addEventListener('keyup', function() {delay(footerEl, footerSave.bind())});
         footerEl.addEventListener('paste', function() {delay(footerEl, footerSave.bind())});
         videoCategoryEl.addEventListener('click', function() {delay(videoCategoryEl, categorySave.bind())});
-        videoCategoryEl.addEventListener('change', function() {delay(videoCategoryEl, categorySave.bind())});
-        
+        videoCategoryEl.addEventListener('change', function() {delay(videoCategoryEl, categorySave.bind())});       
 
         function loadVideo() {
             const data = {
@@ -183,8 +188,8 @@ if (!isset($data['id'])) {
                 body: JSON.stringify(data)
             }).then((res) => res.json()
             ).then((body) => {
+                videoTitleEl.value = body.title;
                 videoDescEl.value = body.description;
-                videoDescSave();
             });
         }
         function publishVideo() {
@@ -202,6 +207,21 @@ if (!isset($data['id'])) {
                 }
             });
         }
+
+        function videoTitleSave() {
+            const data = {
+                'videoId': <?php echo $data["id"] ?>,
+                'title': videoTitleEl.value
+            }
+            fetch("backAjax.php", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then((res) => res.json()
+            ).then((body) => {
+                videoTitleEl.style.border = '';
+            })
+        }
+
         function videoDescSave() {
             const data = {
                 'videoId': <?php echo $data["id"] ?>,
