@@ -110,11 +110,16 @@ if (isset($data->category)) {
 if (!isset($data->blockId) || !is_numeric($data->blockId)) {
     die("No blockId supplied");
 }
+
 if (isset($data->header)) {
+    $stmt = $mysqli->prepare('UPDATE video SET generated = false WHERE id = ? AND userId = ?');
+    $stmt->bind_param("ii", $data->videoId, $user['id']);    
+    $stmt->execute();
+
     if ($data->blockId != -1) {
         $stmt = $mysqli->prepare('UPDATE block SET snippet = ? WHERE id = ? AND userId = ?');
         $stmt->bind_param("sii", $data->header, $data->blockId, $user['id']);
-        $stmt->execute();
+        $stmt->execute();  
         echo '{"id":' . $data->blockId . '}';
         exit;    
     }
@@ -124,14 +129,6 @@ if (isset($data->header)) {
     $stmt->execute();
     $blockId = $stmt->insert_id;
 
-    echo "----";
-    $stmt = $mysqli->prepare('UPDATE video SET generated = 0 WHERE id = ? AND userId = ?');
-    $stmt->bind_param("ii", $data->videoId, $user['id']);    
-    $stmt->execute();
-    echo $data->videoId;
-    echo $user['id'];    
-    echo "----";
-
     $stmt = $mysqli->prepare('INSERT INTO video_to_block (videoId, blockId) VALUES (?, ?)');
     $stmt->bind_param("ii", $data->videoId, $blockId);
     $stmt->execute();
@@ -140,10 +137,14 @@ if (isset($data->header)) {
 }
 
 if (isset($data->footer)) {
+    $stmt = $mysqli->prepare('UPDATE video SET generated = false WHERE id = ? AND userId = ?');
+    $stmt->bind_param("ii", $data->videoId, $user['id']);
+    $stmt->execute();
+
     if ($data->blockId != -1) {
         $stmt = $mysqli->prepare('UPDATE block SET snippet = ? WHERE id = ? AND userId = ?');
         $stmt->bind_param("sii", $data->footer, $data->blockId, $user['id']);
-        $stmt->execute();
+        $stmt->execute();    
         echo '{"id":' . $data->blockId . '}';
         exit;    
     }    
@@ -152,10 +153,6 @@ if (isset($data->footer)) {
     $stmt->bind_param("si", $data->footer, $user['id']);
     $stmt->execute();
     $blockId = $stmt->insert_id;
-
-    $stmt = $mysqli->prepare('UPDATE video SET generated = false WHERE id = ? AND userId = ?');
-    $stmt->bind_param("ii", $data->videoId, $user['id']);
-    $stmt->execute();
 
     $stmt = $mysqli->prepare('INSERT INTO video_to_block (videoId, blockId) VALUES (?, ?)');
     $stmt->bind_param("ii", $data->videoId, $blockId);
