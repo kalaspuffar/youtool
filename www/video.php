@@ -43,6 +43,9 @@ if (!isset($data['id'])) {
     $footerSnippet = isset($blockData['footer']) ? $blockData['footer']['snippet'] : '';    
 }
 
+$active = isset($data['active']) && $data['active'];
+$title = isset($data['title']) ? $data['title'] : '';
+$description = isset($data['description']) ? $data['description'] : '';
 ?>
 
 <!DOCTYPE html>
@@ -59,7 +62,7 @@ if (!isset($data['id'])) {
     <link rel="stylesheet" href="css/skeleton.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/custom.css?r=<?php echo $CSS_UPDATE ?>">   
 </head>
-<body <?php echo $data['active'] ? 'style="background-color: #4f1a59;"' : '' ?>>
+<body <?php echo $active ? 'style="background-color: #4f1a59;"' : '' ?>>
     <div class="section hero">
         <div class="container">
             <h3>Edit video: <?php $videoId ?></h3>
@@ -81,8 +84,8 @@ if (!isset($data['id'])) {
                 <div class="one-half column">
                     <div class="u-full-width column">
                         <h4>Video details</h4>
-                        <textarea id="videoTitle" rows="2" class="u-full-width"><?php echo $data["title"] ?></textarea>
-                        <textarea id="videoDesc" rows="29" class="u-full-width" <?php echo $data['active'] ? 'disabled' : '' ?>><?php echo $data["description"] ?></textarea>
+                        <textarea id="videoTitle" rows="2" class="u-full-width"><?php echo $title ?></textarea>
+                        <textarea id="videoDesc" rows="29" class="u-full-width" <?php echo $active ? 'disabled' : '' ?>><?php echo $description ?></textarea>
                     </div>
                     <iframe width="450" height="253" src="https://www.youtube.com/embed/<?php echo $videoId ?>"frameborder="0" allowfullscreen></iframe>
                 </div>

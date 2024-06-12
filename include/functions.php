@@ -121,6 +121,155 @@ function generateDescription($id, $userId) {
     return implode("\n\n", $snippets);
 }
 
+function sendCommentResponse($commentId, $response, $userId) {
+    $user = getUserAccess($userId);
+
+    if ($user === false) {
+        return [
+            "message" => "Missing access key, login and try again"
+        ];
+    }
+
+    $commentData = [
+        "snippet" => [
+            "textOriginal" => $response,
+            "parentId" => $commentId
+        ] 
+    ];
+
+    $postdata = json_encode($commentData);
+
+    $context = stream_context_create([
+        'http' => [
+            'method'  => 'POST',
+            'header'  =>
+                "Host: www.googleapis.com\r\n" .
+                "Content-Length: " . strlen($postdata) . "\r\n" .
+                "Content-Type: application/json\r\n" .
+                "Authorization: Bearer " . $user['access_token'] . "\r\n" .
+                "User-Agent: YouTool/0.1\r\n",
+            'content' => $postdata
+        ]
+    ]);
+
+    $result = file_get_contents(
+        "https://www.googleapis.com/youtube/v3/comments?part=snippet", 
+        false, 
+        $context
+    );
+
+    if ($result === false) {
+        return [
+            "message" => "Failed posting comment."
+        ];
+    }
+    return true;
+}
+
+function loadComment($commentId, $userId) {
+    global $mysqli;
+    $user = getUserAccess($userId);
+
+    if ($user === false) {
+        return [
+            "message" => "Missing access key, login and try again"
+        ];
+    }
+
+    $context = stream_context_create([
+        'http' => [
+            'method'  => 'GET',
+            'header'  =>
+                "Host: www.googleapis.com\r\n" .
+                "Content-Length: 0\r\n" .
+                "Content-Type: application/json\r\n" .
+                "Authorization: Bearer " . $user['access_token'] . "\r\n" .
+                "User-Agent: YouTool/0.1\r\n",
+        ]
+    ]);
+
+    $result = file_get_contents(
+        "https://www.googleapis.com/youtube/v3/commentThreads?part=id,snippet,replies&id=" . $commentId, 
+        false, 
+        $context
+    );
+
+    if ($result === false) {
+        return [
+            "message" => "Failed fetching comment."
+        ];
+    }
+
+    $commentData = json_decode($result);
+
+    return [
+        "id" => updateComment($userId, $commentData->items[0])
+    ];
+}
+
+function updateComment($userId, $comment) {
+    global $mysqli;
+
+    $stmt = $mysqli->prepare('DELETE FROM comment WHERE userId = ? AND commentId = ?');
+    $stmt->bind_param("is", $userId, $comment->id);
+    $stmt->execute();
+
+    $stmt = $mysqli->prepare('SELECT id FROM video WHERE youtubeId = ?');
+    $stmt->bind_param("s", $comment->snippet->videoId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    if ($res->num_rows == 0) {
+        echo $comment->snippet->videoId . "\n";
+        return;
+    }
+
+    $videoData = $res->fetch_assoc();
+
+    $stmt = $mysqli->prepare(
+        'INSERT INTO comment (' . 
+            'userId, videoId, commentId, authorDisplayName, authorProfileImageUrl, publishedAt, textDisplay, likeCount, visible' .
+            ') VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?, ?, 1)'
+    );
+    $timestamp = strtotime($comment->snippet->topLevelComment->snippet->publishedAt);
+    $stmt->bind_param("iisssisi", 
+        $userId,
+        $videoData['id'],
+        $comment->id,
+        $comment->snippet->topLevelComment->snippet->authorDisplayName,
+        $comment->snippet->topLevelComment->snippet->authorProfileImageUrl,
+        $timestamp,
+        $comment->snippet->topLevelComment->snippet->textDisplay,
+        $comment->snippet->topLevelComment->snippet->likeCount,
+    );
+    $stmt->execute();
+    $currentCommentId = $stmt->insert_id;
+
+    if (isset($comment->replies)) {
+        foreach ($comment->replies->comments as $reply) {        
+            $timestamp = strtotime($reply->snippet->publishedAt);
+            $stmt = $mysqli->prepare(
+                'INSERT INTO comment (' . 
+                    'userId, videoId, commentId, authorDisplayName, authorProfileImageUrl, publishedAt, textDisplay, likeCount, visible, parentId' .
+                    ') VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?, ?, 1, ?)'
+            );
+            $stmt->bind_param("iisssisii", 
+                $userId,
+                $videoData['id'],
+                $comment->id,
+                $reply->snippet->authorDisplayName,
+                $reply->snippet->authorProfileImageUrl,
+                $timestamp,
+                $reply->snippet->textDisplay,
+                $reply->snippet->likeCount,
+                $currentCommentId
+            );
+            $stmt->execute();
+        }
+    }  
+    return $currentCommentId;  
+}
+
 function loadVideo($youtubeId, $userId) {
     global $mysqli;
     $user = getUserAccess($userId);

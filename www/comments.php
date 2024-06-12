@@ -1,5 +1,19 @@
 <?php
 require_once(__DIR__ . '/../include/head.php');
+
+$stmt = $mysqli->prepare('UPDATE comment SET visible = 0 WHERE id = ? AND userId = ?');
+$stmt->bind_param("ii", $_GET['hide'], $user['id']);
+$stmt->execute();
+
+$stmt = $mysqli->prepare('SELECT count(*) FROM comment WHERE visible = 1 AND parentId IS NULL');
+$stmt->execute();
+$res = $stmt->get_result();
+$count = $res->fetch_row()[0];
+
+$stmt = $mysqli->prepare('SELECT count(*) FROM comment WHERE parentId IS NULL');
+$stmt->execute();
+$res = $stmt->get_result();
+$all = $res->fetch_row()[0];
 ?>
 
 <!DOCTYPE html>
@@ -23,7 +37,7 @@ require_once(__DIR__ . '/../include/head.php');
         <div class="row">
                 <div class="one-half column">
                     <div class="u-full-width column">
-                        <h2>List comments</h2>
+                        <h2>List comments: <?php echo $count . '/' . $all ?></h2>
 
                         <div class="row">
                             <a class="button" href="listVideos.php">List videos</a>
@@ -40,7 +54,7 @@ require_once(__DIR__ . '/../include/head.php');
                             $stmt->execute();
                             $videos = fetchAssocAll($stmt, 'id');
                             
-                            $stmt = $mysqli->prepare('SELECT * FROM comment WHERE userId = ? AND parentId IS NULL AND visible = true');
+                            $stmt = $mysqli->prepare('SELECT * FROM comment WHERE userId = ? AND parentId IS NULL AND visible = true ORDER BY publishedAt');
                             $stmt->bind_param("i", $user['id']);
                             $stmt->execute();
                             $result = $stmt->get_result();
@@ -87,7 +101,7 @@ require_once(__DIR__ . '/../include/head.php');
                                         <div id="video_title"><?php echo $videos[$comment['videoId']]['title']; ?></div>
                                         <a id="video_link" src="https://www.youtube.com/watch?v=<?php echo $youtubeId ?>">Link</a>
                                     </div>
-                                    <button id="hide_button">Hide</button>
+                                    <button id="hide_button" data-id="<?php echo $_GET['id'] ?>">Hide</button>
                                 </div>
                                 <div>
                                     <hr/>
@@ -96,7 +110,7 @@ require_once(__DIR__ . '/../include/head.php');
                                     <img id="top_comment_image" src="<?php echo $comment['authorProfileImageUrl'] ?>" />
                                     <div class="desc">
                                         <p id="top_comment_name"><b><?php echo $comment['authorDisplayName'] ?></b></p>
-                                        <p id="top_comment_date"><i><?php echo $comment['publishedAt'] ?></i></p>
+                                        <p id="top_comment_date"><i><?php echo $comment['publishedAt'] ?></i> - Likes: <?php echo $comment['likeCount'] ?></p>
                                         <p id="top_comment_text"><?php echo $comment['textDisplay']; ?></p>
                                     </div>
                                 </div>
@@ -125,6 +139,9 @@ require_once(__DIR__ . '/../include/head.php');
                         <?php
                     } 
                     ?>
+
+                    <textarea id="response_text" rows="10" class="u-full-width"></textarea>
+                    <button id="response_button">Send</button>
                 </div>
             </div>
         </div>
@@ -140,6 +157,31 @@ require_once(__DIR__ . '/../include/head.php');
                 location.href = '?id=' + node.dataset.id;
             });
         }
+
+        const hideButton = document.getElementById('hide_button');
+        hideButton.addEventListener('click', function(e) {
+            location.href = '?hide=' + e.target.dataset.id;
+        });
+
+        const responseText = document.getElementById('response_text');
+        const responseButton = document.getElementById('response_button');
+        responseButton.addEventListener('click', function(e) {
+            const data = {
+                'commentId': '<?php echo $comment["commentId"] ?>',
+                'response': responseText.value
+            }
+            fetch("backAjax.php", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then((res) => res.json()
+            ).then((body) => {
+                if (body.message) {
+                    alert(body.message);
+                }
+                location.href = '?id=' + body.id;
+            })
+        });
+
     </script>
 </body>
 </html>

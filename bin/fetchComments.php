@@ -25,7 +25,7 @@ foreach ($users as $user) {
         );
         $context = stream_context_create($options);
         
-        $comments = file_get_contents('https://content.googleapis.com/youtube/v3/commentThreads?&allThreadsRelatedToChannelId=' . $user['channel_id'] . '&maxResults=100&part=id,snippet&pageToken=' . $nextToken, false, $context);                           
+        $comments = file_get_contents('https://content.googleapis.com/youtube/v3/commentThreads?&allThreadsRelatedToChannelId=' . $user['channel_id'] . '&maxResults=100&part=id,snippet,replies&pageToken=' . $nextToken, false, $context);                           
     
         $decoded = json_decode($comments);                   
         $nextToken = isset($decoded->nextPageToken) ? $decoded->nextPageToken : false;

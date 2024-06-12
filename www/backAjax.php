@@ -37,6 +37,16 @@ if (isset($data->op) && isset($data->videoId) && $data->op == 'publish') {
     exit;
 }
 
+if (isset($data->commentId) && isset($data->response)) {
+    $sendResult = sendCommentResponse($data->commentId, $data->response, $user['id']);
+    if ($sendResult !== true) {
+        return $sendResult;
+    }
+    $result = loadComment($data->commentId, $user['id']);
+    echo json_encode($result);
+    exit;
+}
+
 if (isset($data->snippet)) {
     if (!isset($data->blockId) || !is_numeric($data->blockId)) {
         die("No blockId supplied");

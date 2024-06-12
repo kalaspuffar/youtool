@@ -80,10 +80,11 @@ $categories = fetchAssocAll($stmt, 'id');
                             $videoList = file_get_contents(__DIR__ . '/../data/videos_' . $user['id'] . '.json');
 
                             foreach (json_decode($videoList) as $video) {
-                                if (in_array($video->contentDetails->videoId, $configuredVideos)) continue;
+                                $videoId = $video->snippet->resourceId->videoId;
+                                if (in_array($videoId, $configuredVideos)) continue;
                                 ?>
-                                <a href="video.php?videoId=<?php echo $video->contentDetails->videoId ?>">
-                                    <img src="https://i.ytimg.com/vi/<?php echo $video->contentDetails->videoId ?>/default.jpg"/>
+                                <a href="video.php?videoId=<?php echo $videoId  ?>">
+                                    <img src="https://i.ytimg.com/vi/<?php echo $videoId ?>/default.jpg"/>
                                 </a>
                                 <?php
                             }    
