@@ -49,7 +49,6 @@ foreach ($users as $user) {
         }
     }
 
-
     $fileComments = [];
     foreach ($jsonComments as $comment) {
         $times = [];

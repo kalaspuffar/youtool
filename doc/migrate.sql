@@ -13,6 +13,7 @@ CREATE TABLE video (
     generated BOOLEAN NOT NULL DEFAULT 0,
     published BOOLEAN NOT NULL DEFAULT 0,
     active BOOLEAN NOT NULL DEFAULT 0,
+    internal BOOLEAN NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
 );
 

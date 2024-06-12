@@ -43,7 +43,13 @@ if (!isset($data['id'])) {
     $footerSnippet = isset($blockData['footer']) ? $blockData['footer']['snippet'] : '';    
 }
 
+
+
 $active = isset($data['active']) && $data['active'];
+$internal = isset($data['internal']) && $data['internal'];
+$background = '';
+if ($active) $background = 'style="background-color: #4f1a59;"';
+if ($internal) $background = 'style="background-color: #90EE90;"';
 $title = isset($data['title']) ? $data['title'] : '';
 $description = isset($data['description']) ? $data['description'] : '';
 ?>
@@ -62,7 +68,7 @@ $description = isset($data['description']) ? $data['description'] : '';
     <link rel="stylesheet" href="css/skeleton.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/custom.css?r=<?php echo $CSS_UPDATE ?>">   
 </head>
-<body <?php echo $active ? 'style="background-color: #4f1a59;"' : '' ?>>
+<body <?php echo $background ?>>
     <div class="section hero">
         <div class="container">
             <h3>Edit video: <?php $videoId ?></h3>
@@ -76,6 +82,7 @@ $description = isset($data['description']) ? $data['description'] : '';
             <div class="row">
                 <button id="loadVideo">Load video</button>
                 <button id="activateVideo">Activate</button>
+                <button id="internalVideo">Internal</button>
                 <button id="generateVideo">Generate</button>
                 <button id="publishVideo">Publish</button>
             </div>
@@ -130,6 +137,7 @@ $description = isset($data['description']) ? $data['description'] : '';
 
         const loadVideoEl = document.getElementById('loadVideo');
         const activateVideoEl = document.getElementById('activateVideo');
+        const internalVideoEl = document.getElementById('internalVideo');
         const generateVideoEl = document.getElementById('generateVideo');
         const publishVideoEl = document.getElementById('publishVideo');
 
@@ -141,6 +149,7 @@ $description = isset($data['description']) ? $data['description'] : '';
 
         loadVideoEl.addEventListener('click', loadVideo.bind());
         activateVideoEl.addEventListener('click', activateVideo.bind());
+        internalVideoEl.addEventListener('click', internalVideo.bind());
         generateVideoEl.addEventListener('click', generateVideo.bind());
         publishVideoEl.addEventListener('click', publishVideo.bind());
         
@@ -165,6 +174,7 @@ $description = isset($data['description']) ? $data['description'] : '';
                 body: JSON.stringify(data)
             }).then((res) => res.json()
             ).then((body) => {
+                videoTitleEl.value = body.title;
                 videoDescEl.value = body.description;
             });
         }
@@ -181,6 +191,19 @@ $description = isset($data['description']) ? $data['description'] : '';
                 location.href = location.href;
             });
         }
+        function internalVideo() {
+            const data = {
+                'videoId': <?php echo $data["id"] ?>,
+                'op': 'internal'
+            }
+            fetch("backAjax.php", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then((res) => res.json()
+            ).then((body) => {
+                location.href = location.href;
+            });
+        }    
         function generateVideo() {
             const data = {
                 'videoId': <?php echo $data["id"] ?>,

@@ -122,6 +122,8 @@ function generateDescription($id, $userId) {
 }
 
 function sendCommentResponse($commentId, $response, $userId) {
+    global $mysqli;
+
     $user = getUserAccess($userId);
 
     if ($user === false) {
@@ -163,7 +165,37 @@ function sendCommentResponse($commentId, $response, $userId) {
             "message" => "Failed posting comment."
         ];
     }
-    return true;
+
+    $reply = json_decode($result);
+
+    $stmt = $mysqli->prepare('SELECT * FROM comment WHERE userId = ? AND commentId = ?');
+    $stmt->bind_param("is", $user['id'], $commentId);
+    $stmt->execute();
+    $parentResult = $stmt->get_result();
+    $parentComment = $parentResult->fetch_assoc();
+
+    $timestamp = strtotime($reply->snippet->publishedAt);
+    $stmt = $mysqli->prepare(
+        'INSERT INTO comment (' . 
+            'userId, videoId, commentId, authorDisplayName, authorProfileImageUrl, publishedAt, textDisplay, likeCount, visible, parentId' .
+            ') VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?, ?, 1, ?)'
+    );
+    $stmt->bind_param("iisssisii", 
+        $user['id'],
+        $parentComment['videoId'],
+        $commentId,
+        $reply->snippet->authorDisplayName,
+        $reply->snippet->authorProfileImageUrl,
+        $timestamp,
+        $reply->snippet->textDisplay,
+        $reply->snippet->likeCount,
+        $parentComment['id']
+    );
+    $stmt->execute();
+
+    return [
+        "id" => $parentComment['id']
+    ];
 }
 
 function loadComment($commentId, $userId) {

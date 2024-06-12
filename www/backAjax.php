@@ -4,7 +4,15 @@ require_once(__DIR__ . '/../include/head.php');
 $data = json_decode(file_get_contents('php://input'));
 
 if (isset($data->op) && isset($data->videoId) && $data->op == 'activate') {
-    $stmt = $mysqli->prepare('UPDATE video SET active = !active WHERE id = ? AND userId = ?');
+    $stmt = $mysqli->prepare('UPDATE video SET active = !active, internal = false WHERE id = ? AND userId = ?');
+    $stmt->bind_param("ii", $data->videoId, $user['id']);
+    $stmt->execute();
+    echo '{}';
+    exit;
+}
+
+if (isset($data->op) && isset($data->videoId) && $data->op == 'internal') {
+    $stmt = $mysqli->prepare('UPDATE video SET internal = !internal, active = false WHERE id = ? AND userId = ?');
     $stmt->bind_param("ii", $data->videoId, $user['id']);
     $stmt->execute();
     echo '{}';
@@ -38,11 +46,7 @@ if (isset($data->op) && isset($data->videoId) && $data->op == 'publish') {
 }
 
 if (isset($data->commentId) && isset($data->response)) {
-    $sendResult = sendCommentResponse($data->commentId, $data->response, $user['id']);
-    if ($sendResult !== true) {
-        return $sendResult;
-    }
-    $result = loadComment($data->commentId, $user['id']);
+    $result = sendCommentResponse($data->commentId, $data->response, $user['id']);
     echo json_encode($result);
     exit;
 }

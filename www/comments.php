@@ -99,7 +99,7 @@ $all = $res->fetch_row()[0];
                                     <img id="video_img" src="https://i.ytimg.com/vi/<?php echo $youtubeId ?>/default.jpg" />
                                     <div class="desc">
                                         <div id="video_title"><?php echo $videos[$comment['videoId']]['title']; ?></div>
-                                        <a id="video_link" src="https://www.youtube.com/watch?v=<?php echo $youtubeId ?>">Link</a>
+                                        <a id="video_link" target="_blank" href="https://www.youtube.com/watch?v=<?php echo $youtubeId ?>">Link</a>
                                     </div>
                                     <button id="hide_button" data-id="<?php echo $_GET['id'] ?>">Hide</button>
                                 </div>
@@ -170,6 +170,9 @@ $all = $res->fetch_row()[0];
                 'commentId': '<?php echo $comment["commentId"] ?>',
                 'response': responseText.value
             }
+
+            responseText.style.border = '3px solid red';
+
             fetch("backAjax.php", {
                 method: 'POST',
                 body: JSON.stringify(data)

@@ -5,6 +5,19 @@ $stmt = $mysqli->prepare('SELECT * FROM category WHERE userId = ?');
 $stmt->bind_param("i", $user['id']);
 $stmt->execute();
 $categories = fetchAssocAll($stmt, 'id');
+
+if (isset($_GET['filter'])) {
+    $_COOKIE['filter'] = $_GET['filter'];
+}
+$filter = isset($_COOKIE["filter"]) ? $_COOKIE["filter"] : "";
+setcookie("filter", $filter, time()+3600);
+
+if (isset($_GET['category'])) {
+    $_COOKIE['category'] = $_GET['category'];
+}
+$selectedCategory = isset($_COOKIE["category"]) ? $_COOKIE["category"] : "";
+setcookie("category", $selectedCategory, time()+3600);
+
 ?>
 
 <!DOCTYPE html>
@@ -39,16 +52,12 @@ $categories = fetchAssocAll($stmt, 'id');
                             <a class="button" href="block.php">Block editor</a>
                             <a class="button" href="comments.php">List comments</a>
                         </div>
-
-                        <?php 
-                        $filter = isset($_GET["filter"]) ? $_GET["filter"] : "";
-                        $selectedCategory = isset($_GET["category"]) ? $_GET["category"] : "";
-                        ?>
                         <div class="row">
                             <form method="GET" action="#">
                                 <select name="filter" onchange="javascript:submit()">
                                     <option value="">Active</option>
                                     <option <?php echo $filter == "inactive" ? "selected" : "" ?> value="inactive">Not Active</option>
+                                    <option <?php echo $filter == "internal" ? "selected" : "" ?> value="internal">Internal</option>                                    
                                     <option <?php echo $filter == "generating" ? "selected" : "" ?> value="generating">Not Generated</option>
                                     <option <?php echo $filter == "publishing" ? "selected" : "" ?> value="publishing">Not Published</option>
                                     <option <?php echo $filter == "unconfig" ? "selected" : "" ?> value="unconfig">Not Configured</option>
@@ -90,20 +99,25 @@ $categories = fetchAssocAll($stmt, 'id');
                             }    
                         } else {
                             $active = 1;
-                            if (isset($_GET['filter']) && $_GET['filter'] == 'inactive') {
+                            if ($filter == 'inactive') {
                                 $active = 0;
                             }
-                            if (isset($_GET['filter']) && $_GET['filter'] == 'generating') {
+                            $internal = 0;
+                            if ($filter == 'internal') {
+                                $active = 0;
+                                $internal = 1;
+                            }
+                            if ($filter == 'generating') {
                                 $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND generated = false AND userId = ?');
                                 $stmt->bind_param("i", $user['id']);
                                 $stmt->execute();    
-                            } else if (isset($_GET['filter']) && $_GET['filter'] == 'publishing') {
+                            } else if ($filter == 'publishing') {
                                 $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND published = false AND userId = ?');
                                 $stmt->bind_param("i", $user['id']);
                                 $stmt->execute();    
                             } else if ($selectedCategory == '') {
-                                $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND userId = ?');
-                                $stmt->bind_param("ii", $active, $user['id']);
+                                $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND internal = ? AND userId = ?');
+                                $stmt->bind_param("iii", $active, $internal, $user['id']);
                                 $stmt->execute();    
                             } else {
                                 $stmt = $mysqli->prepare(
