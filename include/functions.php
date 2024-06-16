@@ -2,7 +2,7 @@
 require_once(__DIR__ . '/../include/dbconnect.php');
 
 function getUserAccess($userId) {
-    global $mysqli;
+    global $mysqli, $YOUTUBE_API_JSON;
 
     $stmt = $mysqli->prepare('SELECT * FROM users WHERE expire_time > DATE_ADD(NOW(), INTERVAL 10 MINUTE) AND id = ?');
     $stmt->bind_param("i", $userId);
@@ -19,7 +19,7 @@ function getUserAccess($userId) {
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 
-    $keyStr = file_get_contents(__DIR__ . '/../etc/client_secret_326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com.json');
+    $keyStr = file_get_contents($YOUTUBE_API_JSON);
     $keyData = json_decode($keyStr);
 
     $data = [
@@ -122,7 +122,7 @@ function generateDescription($id, $userId) {
 }
 
 function sendCommentResponse($commentId, $response, $userId) {
-    global $mysqli;
+    global $mysqli, $YOUTUBE_API_QUOTA_UPDATE_COST;
 
     $user = getUserAccess($userId);
 
@@ -141,23 +141,12 @@ function sendCommentResponse($commentId, $response, $userId) {
 
     $postdata = json_encode($commentData);
 
-    $context = stream_context_create([
-        'http' => [
-            'method'  => 'POST',
-            'header'  =>
-                "Host: www.googleapis.com\r\n" .
-                "Content-Length: " . strlen($postdata) . "\r\n" .
-                "Content-Type: application/json\r\n" .
-                "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                "User-Agent: YouTool/0.1\r\n",
-            'content' => $postdata
-        ]
-    ]);
-
-    $result = file_get_contents(
-        "https://www.googleapis.com/youtube/v3/comments?part=snippet", 
-        false, 
-        $context
+    $result = callYoutubeAPI(
+        $user, 
+        'https://www.googleapis.com/youtube/v3/comments?part=snippet', 
+        'POST', 
+        $postdata, 
+        $YOUTUBE_API_QUOTA_UPDATE_COST
     );
 
     if ($result === false) {
@@ -199,7 +188,7 @@ function sendCommentResponse($commentId, $response, $userId) {
 }
 
 function loadComment($commentId, $userId) {
-    global $mysqli;
+    global $mysqli, $YOUTUBE_API_QUOTA_LIST_COST;
     $user = getUserAccess($userId);
 
     if ($user === false) {
@@ -208,22 +197,12 @@ function loadComment($commentId, $userId) {
         ];
     }
 
-    $context = stream_context_create([
-        'http' => [
-            'method'  => 'GET',
-            'header'  =>
-                "Host: www.googleapis.com\r\n" .
-                "Content-Length: 0\r\n" .
-                "Content-Type: application/json\r\n" .
-                "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                "User-Agent: YouTool/0.1\r\n",
-        ]
-    ]);
-
-    $result = file_get_contents(
-        "https://www.googleapis.com/youtube/v3/commentThreads?part=id,snippet,replies&id=" . $commentId, 
-        false, 
-        $context
+    $result = callYoutubeAPI(
+        $user, 
+        'https://www.googleapis.com/youtube/v3/commentThreads?part=id,snippet,replies&id=' . $commentId, 
+        'GET', 
+        '', 
+        $YOUTUBE_API_QUOTA_LIST_COST
     );
 
     if ($result === false) {
@@ -303,7 +282,7 @@ function updateComment($userId, $comment) {
 }
 
 function loadVideo($youtubeId, $userId) {
-    global $mysqli;
+    global $mysqli, $YOUTUBE_API_QUOTA_LIST_COST;
     $user = getUserAccess($userId);
 
     if ($user === false) {
@@ -312,22 +291,12 @@ function loadVideo($youtubeId, $userId) {
         ];
     }
 
-    $context = stream_context_create([
-        'http' => [
-            'method'  => 'GET',
-            'header'  =>
-                "Host: www.googleapis.com\r\n" .
-                "Content-Length: 0\r\n" .
-                "Content-Type: application/json\r\n" .
-                "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                "User-Agent: YouTool/0.1\r\n",
-        ]
-    ]);
-
-    $result = file_get_contents(
-        "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" . $youtubeId, 
-        false, 
-        $context
+    $result = callYoutubeAPI(
+        $user, 
+        'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' . $youtubeId, 
+        'GET', 
+        '', 
+        $YOUTUBE_API_QUOTA_LIST_COST
     );
 
     if ($result === false) {
@@ -352,7 +321,7 @@ function loadVideo($youtubeId, $userId) {
 }
 
 function submitDescription($id, $userId) {
-    global $mysqli;
+    global $mysqli, $YOUTUBE_API_QUOTA_UPDATE_COST;
 
     $user = getUserAccess($userId);
 
@@ -388,9 +357,38 @@ function submitDescription($id, $userId) {
     ];
     $postdata = json_encode($data);
 
+    $result = callYoutubeAPI(
+        $user, 
+        'https://www.googleapis.com/youtube/v3/videos?part=snippet', 
+        'PUT', 
+        $postdata, 
+        $YOUTUBE_API_QUOTA_UPDATE_COST
+    );
+
+    if ($result !== false) {
+        $stmt = $mysqli->prepare('UPDATE video SET published = true, publishedAt = NOW() WHERE id = ? AND userId = ?');
+        $stmt->bind_param("ii", $id, $user['id']);
+        $stmt->execute();
+
+        return ["message" => "Published"];
+    }
+}
+
+function updateQuotaCost($cost) {
+    global $mysqli;
+
+    $stmt = $mysqli->prepare('INSERT INTO quota (quota_day, count) ' .
+        'VALUES (IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(@today, INTERVAL 1 DAY), CURDATE()), ?) '.
+        'ON DUPLICATE KEY UPDATE ' .
+        'count = count + ?');
+    $stmt->bind_param("ii", $cost, $cost);
+    $stmt->execute();
+}
+
+function callYoutubeAPI($user, $url, $method, $postdata, $cost) {
     $context = stream_context_create([
         'http' => [
-            'method'  => 'PUT',
+            'method'  => $method,
             'header'  =>
                 "Host: www.googleapis.com\r\n" .
                 "Content-Length: " . strlen($postdata) . "\r\n" .
@@ -401,17 +399,20 @@ function submitDescription($id, $userId) {
         ]
     ]);
 
-    $result = file_get_contents(
-        "https://www.googleapis.com/youtube/v3/videos?part=snippet", 
-        false, 
-        $context
-    );
+    $result = file_get_contents($url, false, $context);
 
-    if ($result !== false) {
-        $stmt = $mysqli->prepare('UPDATE video SET published = true WHERE id = ? AND userId = ?');
-        $stmt->bind_param("ii", $id, $user['id']);
-        $stmt->execute();
+    updateQuotaCost($cost);
 
-        return ["message" => "Published"];
-    }
+    return $result;
+}
+
+function showQuota() {
+    global $mysqli, $YOUTUBE_API_QUOTA_PER_DAY;
+
+    $stmt = $mysqli->prepare('SELECT count FROM quota WHERE quota_day = ' .
+        'IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(@today, INTERVAL 1 DAY), CURDATE())');
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+    echo $data['count'] . '/' . $YOUTUBE_API_QUOTA_PER_DAY;
 }

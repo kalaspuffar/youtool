@@ -12,6 +12,8 @@ CREATE TABLE video (
     description TEXT,
     generated BOOLEAN NOT NULL DEFAULT 0,
     published BOOLEAN NOT NULL DEFAULT 0,
+    generatedAt TIMESTAMP NOT NULL,
+    publishedAt TIMESTAMP NOT NULL,
     active BOOLEAN NOT NULL DEFAULT 0,
     internal BOOLEAN NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
@@ -82,4 +84,11 @@ CREATE TABLE comment (
     likeCount INT NOT NULL DEFAULT 0,
     visible BOOLEAN NOT NULL DEFAULT 1,
     PRIMARY KEY (id)
+);
+
+
+CREATE TABLE quota (
+    quota_day DATE,
+    count INT,
+    PRIMARY KEY (quota_day)
 );

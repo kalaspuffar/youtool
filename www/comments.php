@@ -39,6 +39,8 @@ $all = $res->fetch_row()[0];
                     <div class="u-full-width column">
                         <h2>List comments: <?php echo $count . '/' . $all ?></h2>
 
+                        <h5>Quota: <?php showQuota() ?></h5>
+
                         <div class="row">
                             <a class="button" href="listVideos.php">List videos</a>
                             <a class="button" href="category.php">Categories</a>

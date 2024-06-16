@@ -1,11 +1,11 @@
 <?php
-require_once(__DIR__ . '/../include/dbconnect.php');
+require_once(__DIR__ . '/../include/functions.php');
 
 if (
     $_REQUEST['scope'] == 'https://www.googleapis.com/auth/youtube.readonly' ||
     $_REQUEST['scope'] == 'https://www.googleapis.com/auth/youtube.force-ssl'
 ) {
-    $keyStr = file_get_contents(__DIR__ . '/../etc/client_secret_326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com.json');
+    $keyStr = file_get_contents($YOUTUBE_API_JSON);
     $keyData = json_decode($keyStr);
 
     $data = [
@@ -47,6 +47,9 @@ if (
     );
     $context = stream_context_create($options);
     $channelResult = file_get_contents('https://www.googleapis.com/youtube/v3/channels?mine=true', false, $context);
+
+    updateQuotaCost($YOUTUBE_API_QUOTA_LIST_COST);
+
     if ($channelResult === false) {
         die('FAILED TO LOGIN!');
     }

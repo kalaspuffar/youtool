@@ -42,6 +42,8 @@ setcookie("category", $selectedCategory, time()+3600);
                     <div class="u-full-width column">
                         <h2>List videos</h2>
 
+                        <h5>Quota: <?php showQuota() ?></h5>
+
                         <h5>Update to write access:</h5>
                         <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
                             <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
@@ -129,6 +131,11 @@ setcookie("category", $selectedCategory, time()+3600);
                                 $stmt->execute();
                             }
                             $result = $stmt->get_result();
+
+                            ?>
+                            <p>Found videos: <?php echo $result->num_rows ?></p>
+                            <?php
+
                             $items = $result->fetch_all(MYSQLI_ASSOC);
                             foreach ($items as $video) {
                                 ?>
