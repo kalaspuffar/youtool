@@ -7,7 +7,8 @@ $stmt = $mysqli->prepare('SELECT count FROM quota WHERE quota_day = ' .
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_assoc();
-$quotaLeft = $YOUTUBE_API_QUOTA_PER_DAY - $data['count'] - $YOUTUBE_API_QUOTA_BUFFERT;
+$count = isset($data['count']) ? $data['count'] : 0;
+$quotaLeft = $YOUTUBE_API_QUOTA_PER_DAY - $count - $YOUTUBE_API_QUOTA_BUFFERT;
 $allowedVideosToUpdate = (int)($quotaLeft / $YOUTUBE_API_QUOTA_UPDATE_COST);
 
 $stmt = $mysqli->prepare(
