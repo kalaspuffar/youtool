@@ -214,7 +214,6 @@ $description = isset($data['description']) ? $data['description'] : '';
                 body: JSON.stringify(data)
             }).then((res) => res.json()
             ).then((body) => {
-                videoTitleEl.value = body.title;
                 videoDescEl.value = body.description;
             });
         }

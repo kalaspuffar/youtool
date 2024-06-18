@@ -378,7 +378,7 @@ function updateQuotaCost($cost) {
     global $mysqli;
 
     $stmt = $mysqli->prepare('INSERT INTO quota (quota_day, count) ' .
-        'VALUES (IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(@today, INTERVAL 1 DAY), CURDATE()), ?) '.
+        'VALUES (IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(CURDATE(), INTERVAL 1 DAY), CURDATE()), ?) '.
         'ON DUPLICATE KEY UPDATE ' .
         'count = count + ?');
     $stmt->bind_param("ii", $cost, $cost);
@@ -410,9 +410,10 @@ function showQuota() {
     global $mysqli, $YOUTUBE_API_QUOTA_PER_DAY;
 
     $stmt = $mysqli->prepare('SELECT count FROM quota WHERE quota_day = ' .
-        'IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(@today, INTERVAL 1 DAY), CURDATE())');
+        'IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(CURDATE(), INTERVAL 1 DAY), CURDATE())');
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
-    echo $data['count'] . '/' . $YOUTUBE_API_QUOTA_PER_DAY;
+    $count = isset($data['count']) ? $data['count'] : 0;
+    echo $count . '/' . $YOUTUBE_API_QUOTA_PER_DAY;
 }

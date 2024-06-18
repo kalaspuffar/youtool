@@ -3,7 +3,7 @@ require_once(__DIR__ . '/../include/functions.php');
 
 
 $stmt = $mysqli->prepare('SELECT count FROM quota WHERE quota_day = ' .
-'IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(@today, INTERVAL 1 DAY), CURDATE())');
+    'IF(NOW() < CONCAT(CURDATE(), " 07:00:00"), DATE_SUB(CURDATE(), INTERVAL 1 DAY), CURDATE())');
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_assoc();
