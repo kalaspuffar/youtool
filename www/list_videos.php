@@ -65,6 +65,9 @@ setcookie("category", $selectedCategory, time()+3600);
                     </div>
                     <?php
                     if ($filter == "unconfig") {
+
+                        updateVideos($user);
+
                         $stmt = $mysqli->prepare('SELECT youtubeId FROM video WHERE userId = ?');
                         $stmt->bind_param("i", $user['id']);
                         $stmt->execute();

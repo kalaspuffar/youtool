@@ -434,3 +434,45 @@ function showPayment() {
         echo 'Pro until ' . $payedUntil;
     }
 }
+
+function updateVideos($user) {    
+    global $YOUTUBE_API_QUOTA_LIST_COST;
+
+    $filename = __DIR__ . '/../data/videos_' . $user['id'] . '.json';
+    if (file_exists($filename) && filemtime($filename) > time() - 3600) {
+        exit;
+    }
+
+    $videoList = [];
+
+    $nextToken = '';
+    while($nextToken !== false) {    
+        $options = array(
+            'http' => array(
+                'method'  => "GET",
+                'header' => "Content-Type: application/json\r\n" .
+                            "Content-Length: 0\r\n" .
+                            "Authorization: Bearer " . $user['access_token'] . "\r\n" .
+                            "User-Agent: YouTool/0.1\r\n"
+            ),
+        );
+        $context = stream_context_create($options);
+        
+        $channelVideoList = $user['channel_id'];
+        if (substr($user['channel_id'], 0, 2) == 'UC') {
+            $channelVideoList = 'UU' . substr($user['channel_id'], 2);
+        }
+    
+        $videos = file_get_contents('https://content.googleapis.com/youtube/v3/playlistItems?playlistId=' . $channelVideoList . '&maxResults=50&part=id,snippet&pageToken=' . $nextToken, false, $context);                           
+
+        updateQuotaCost($YOUTUBE_API_QUOTA_LIST_COST);
+   
+        $decoded = json_decode($videos);                            
+        $nextToken = isset($decoded->nextPageToken) ? $decoded->nextPageToken : false;
+        foreach ($decoded->items as $video) {
+            array_push($videoList, $video);
+        }    
+    }
+    
+    file_put_contents(__DIR__ . '/../data/videos_' . $user['id'] . '.json', json_encode($videoList));    
+}
