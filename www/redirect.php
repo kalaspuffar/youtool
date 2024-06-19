@@ -36,6 +36,8 @@ if (
         die('FAILED TO LOGIN!');
     }
 
+    var_dump($tokenData);
+
     $options = array(
         'http' => array(
             'method'  => "GET",
@@ -92,7 +94,5 @@ if (
     }
 
     $stmt->execute();
-    header("Location: https://youtool.app/list_videos.php");
-    exit;
 }
 header("Location: https://youtool.app");

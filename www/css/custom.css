@@ -156,3 +156,24 @@ select {
 .topmenu {
   margin-bottom: 20px;
 }
+
+.price-card {
+  border: 1px solid white;
+  border-radius: 5px;
+  padding: 15px 25px 5px;
+  text-align: left;
+}
+
+.selected-price-card {
+  border: 1px solid white;
+  border-radius: 5px;
+  padding: 15px 25px 5px;
+  text-align: left;
+  background: white;
+  color: black;
+  font-weight: bolder;
+}
+
+.feature-list {
+  margin-top: 0.5em;
+}
