@@ -92,3 +92,16 @@ CREATE TABLE quota (
     count INT,
     PRIMARY KEY (quota_day)
 );
+
+CREATE TABLE payment (
+    id VARCHAR(255) NOT NULL,
+    userId INT NOT NULL,
+    quantity FLOAT NOT NULL,
+    price FLOAT NOT NULL,
+    payed FLOAT,
+    status VARCHAR(255),
+    paymentDate TIMESTAMP,
+    email VARCHAR(255),
+    response TEXT,
+    PRIMARY KEY (id)
+);

@@ -71,13 +71,7 @@ $description = isset($data['description']) ? $data['description'] : '';
 <body <?php echo $background ?>>
     <div class="section hero">
         <div class="container">
-            <h3>Edit video: <?php $videoId ?></h3>
-            <div class="row">
-                <a class="button" href="listVideos.php">List videos</a>
-                <a class="button" href="category.php">Categories</a>
-                <a class="button" href="block.php">Block editor</a>
-                <a class="button" href="comments.php">List comments</a>
-            </div>
+            <?php require_once(__DIR__ . '/../include/topbar.php'); ?>
 
             <div class="row">
                 <button id="loadVideo">Load video</button>

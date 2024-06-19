@@ -417,3 +417,20 @@ function showQuota() {
     $count = isset($data['count']) ? $data['count'] : 0;
     echo $count . '/' . $YOUTUBE_API_QUOTA_PER_DAY;
 }
+
+
+function showPayment() {
+    global $mysqli, $user, $YOUTUBE_API_QUOTA_PER_DAY;
+
+    $stmt = $mysqli->prepare('SELECT payed_until FROM users WHERE payed_until > NOW() AND id = ?');
+    $stmt->bind_param("i", $user['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+    $payedUntil = isset($data['payed_until']) ? $data['payed_until'] : false;
+    if ($payedUntil === false) {
+        echo 'Standard';
+    } else {
+        echo 'Pro until ' . $payedUntil;
+    }
+}

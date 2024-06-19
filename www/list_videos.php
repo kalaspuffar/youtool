@@ -37,23 +37,11 @@ setcookie("category", $selectedCategory, time()+3600);
 <body>
     <div class="section hero">
         <div class="container">
-        <div class="row">
+            <?php require_once(__DIR__ . '/../include/topbar.php'); ?>
+
+            <div class="row">
                 <div class="one-half column">
                     <div class="u-full-width column">
-                        <h2>List videos</h2>
-
-                        <h5>Quota: <?php showQuota() ?></h5>
-
-                        <h5>Update to write access:</h5>
-                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
-                            <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
-                        </a><br/>
-
-                        <div class="row">
-                            <a class="button" href="category.php">Categories</a>
-                            <a class="button" href="block.php">Block editor</a>
-                            <a class="button" href="comments.php">List comments</a>
-                        </div>
                         <div class="row">
                             <form method="GET" action="#">
                                 <select name="filter" onchange="javascript:submit()">
@@ -94,7 +82,7 @@ setcookie("category", $selectedCategory, time()+3600);
                                 $videoId = $video->snippet->resourceId->videoId;
                                 if (in_array($videoId, $configuredVideos)) continue;
                                 ?>
-                                <a href="video.php?videoId=<?php echo $videoId  ?>">
+                                <a href="edit_video.php?videoId=<?php echo $videoId  ?>">
                                     <img src="https://i.ytimg.com/vi/<?php echo $videoId ?>/default.jpg"/>
                                 </a>
                                 <?php
@@ -139,7 +127,7 @@ setcookie("category", $selectedCategory, time()+3600);
                             $items = $result->fetch_all(MYSQLI_ASSOC);
                             foreach ($items as $video) {
                                 ?>
-                                <a href="video.php?videoId=<?php echo $video["youtubeId"] ?>">
+                                <a href="edit_video.php?videoId=<?php echo $video["youtubeId"] ?>">
                                     <img src="https://i.ytimg.com/vi/<?php echo $video["youtubeId"] ?>/default.jpg"/>
                                 </a>
                                 <?php

@@ -34,18 +34,12 @@ $all = $res->fetch_row()[0];
 <body>
     <div class="section hero">
         <div class="container">
-        <div class="row">
+            <?php require_once(__DIR__ . '/../include/topbar.php'); ?>
+
+            <div class="row">
                 <div class="one-half column">
                     <div class="u-full-width column">
                         <h2>List comments: <?php echo $count . '/' . $all ?></h2>
-
-                        <h5>Quota: <?php showQuota() ?></h5>
-
-                        <div class="row">
-                            <a class="button" href="listVideos.php">List videos</a>
-                            <a class="button" href="category.php">Categories</a>
-                            <a class="button" href="block.php">Block editor</a>
-                        </div>
 
                         <ul class="main_list">
                         <?php

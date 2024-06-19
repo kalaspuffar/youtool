@@ -92,7 +92,7 @@ if (
     }
 
     $stmt->execute();
-    header("Location: https://youtool.app/listVideos.php");
+    header("Location: https://youtool.app/list_videos.php");
     exit;
 }
 header("Location: https://youtool.app");

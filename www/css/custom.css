@@ -139,3 +139,20 @@ input,
 select {
   color: #333;
 }
+
+.playful {
+  max-width: 300px;
+}
+
+#paypal-button-container {
+  margin-top: 10px;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+}
+
+.topmenu {
+  margin-bottom: 20px;
+}

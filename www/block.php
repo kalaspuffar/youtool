@@ -64,12 +64,7 @@ $types = [
 <body>
     <div class="section hero">
         <div class="container">
-            <h3>Block editor</h3>
-            <div class="row">
-                <a class="button" href="listVideos.php">List videos</a>
-                <a class="button" href="category.php">Categories</a>
-                <a class="button" href="comments.php">List comments</a>
-            </div>
+            <?php require_once(__DIR__ . '/../include/topbar.php'); ?>
 
             <div class="row">
                 <div class="one-half column">
