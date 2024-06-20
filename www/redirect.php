@@ -36,21 +36,17 @@ if (
         die('FAILED TO LOGIN!');
     }
 
-    var_dump($tokenData);
+    $user = [
+        'access_token' => $tokenData->access_token
+    ];
 
-    $options = array(
-        'http' => array(
-            'method'  => "GET",
-            'header' => "Content-Type: application/json\r\n" .
-                        "Content-Length: 0\r\n" .
-                        "Authorization: Bearer " . $tokenData->access_token . "\r\n" .
-                        "User-Agent: YouTool/0.1\r\n"            
-        ),
+    $channelResult = callYoutubeAPI(
+        $user,
+        'https://www.googleapis.com/youtube/v3/channels?mine=true',
+        'GET',
+        '',
+        $YOUTUBE_API_QUOTA_LIST_COST
     );
-    $context = stream_context_create($options);
-    $channelResult = file_get_contents('https://www.googleapis.com/youtube/v3/channels?mine=true', false, $context);
-
-    updateQuotaCost($YOUTUBE_API_QUOTA_LIST_COST);
 
     if ($channelResult === false) {
         die('FAILED TO LOGIN!');

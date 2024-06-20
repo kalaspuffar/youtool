@@ -77,7 +77,7 @@ if (isset($_COOKIE['auth_key'])) {
                         <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
                     </a><br/>
 
-                    <?php if (isset($user['id'])) { ?>
+                    <?php if (isset($user['id']) && $user['id'] == 1) { ?>
                         <hr/>
 
                         <div id="payment_response"></div>
@@ -93,7 +93,7 @@ if (isset($_COOKIE['auth_key'])) {
             </div>
         </div>
     </div>
-    <?php if (isset($user['id'])) { ?>
+    <?php if (isset($user['id']) && $user['id'] == 1) { ?>
     <script>
         const monthSelect = document.getElementById('months');
         const monthDisplay = document.getElementById('month_display');
@@ -120,11 +120,18 @@ if (isset($_COOKIE['auth_key'])) {
                     body: JSON.stringify(data)
                 });
 
-                const order = await response.json();
-                if (order?.status == 'FAILURE') {
-                    paymentResponse.innerHTML = '<span style="color:red">' + order.message + '</span>';
+                const orderData = await response.json();
+
+                const errorDetail = orderData?.details?.[0];
+                if (response?.status > 299) {
+                    console.error(orderData);
+
+                    var error = `${errorDetail.description} (${orderData.debug_id})`;
+                    paymentResponse.innerHTML = '<span style="color:red">' +
+                        `Sorry, your transaction could not be processed...<br><br>${error}` + '</span>';
                 }
-                return order.id;
+
+                return orderData.id;
             },                        
             async onApprove(data, actions) {
                 try {
@@ -143,12 +150,10 @@ if (isset($_COOKIE['auth_key'])) {
                     const orderData = await response.json();
 
                     const errorDetail = orderData?.details?.[0];
-                    if (orderData?.status == 'FAILURE') {                                    
-                        paymentResponse.innerHTML = '<span style="color:red">' + orderData.message + '</span>';
-                        return;
-                    }
 
-                    if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
+                    if (orderData?.name === "INTERNAL_SERVER_ERROR") {
+                        throw new Error(`${orderData.message}`);
+                    } else if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
                         return actions.restart();
                     } else if (errorDetail) {
                         throw new Error(`${errorDetail.description} (${orderData.debug_id})`);

@@ -13,21 +13,16 @@ foreach ($users as $user) {
 
     $nextToken = '';
     while($nextToken !== false) {
-    
-        $options = array(
-            'http' => array(
-                'method'  => "GET",
-                'header' => "Content-Type: application/json\r\n" .
-                            "Content-Length: 0\r\n" .
-                            "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                            "User-Agent: YouTool/0.1\r\n"
-            ),
+
+        $result = callYoutubeAPI(
+            $user,
+            'https://content.googleapis.com/youtube/v3/commentThreads?&allThreadsRelatedToChannelId=' . $user['channel_id'] . '&maxResults=100&part=id,snippet,replies&pageToken=' . $nextToken,
+            'GET',
+            '',
+            $YOUTUBE_API_QUOTA_LIST_COST
         );
-        $context = stream_context_create($options);
-        
-        $comments = file_get_contents('https://content.googleapis.com/youtube/v3/commentThreads?&allThreadsRelatedToChannelId=' . $user['channel_id'] . '&maxResults=100&part=id,snippet,replies&pageToken=' . $nextToken, false, $context);                           
-    
-        $decoded = json_decode($comments);                   
+
+        $decoded = json_decode($result);
         $nextToken = isset($decoded->nextPageToken) ? $decoded->nextPageToken : false;
         foreach ($decoded->items as $comment) {
             array_push($commentList, $comment);

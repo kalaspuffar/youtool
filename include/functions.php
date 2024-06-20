@@ -131,6 +131,12 @@ function sendCommentResponse($commentId, $response, $userId) {
             "message" => "Missing access key, login and try again"
         ];
     }
+    if ($user['write_access'] != 1) {
+        return ["message" => "Write access missing"];
+    }
+    if (userPayedUntil() === false) {
+        return ["message" => "Feature requires a subscription"];
+    }
 
     $commentData = [
         "snippet" => [
@@ -331,7 +337,7 @@ function submitDescription($id, $userId) {
     if ($user['write_access'] != 1) {
         return ["message" => "Write access missing"];
     }
-    if (!isset($user['payed_until'])) {
+    if (userPayedUntil() === false) {
         return ["message" => "Feature requires a subscription"];
     }
 
@@ -386,24 +392,16 @@ function updateQuotaCost($cost) {
 }
 
 function callYoutubeAPI($user, $url, $method, $postdata, $cost) {
-    $context = stream_context_create([
-        'http' => [
-            'method'  => $method,
-            'header'  =>
-                "Host: www.googleapis.com\r\n" .
-                "Content-Length: " . strlen($postdata) . "\r\n" .
-                "Content-Type: application/json\r\n" .
-                "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                "User-Agent: YouTool/0.1\r\n",
-            'content' => $postdata
-        ]
-    ]);
+    $headers = [
+        'Host: www.googleapis.com',
+        'Authorization: Bearer ' . $user['access_token']
+    ];
 
-    $result = file_get_contents($url, false, $context);
+    $result = curlCall($url, $method, $headers, $postdata);
 
     updateQuotaCost($cost);
 
-    return $result;
+    return $result[1];
 }
 
 function showQuota() {
@@ -418,16 +416,19 @@ function showQuota() {
     echo $count . '/' . $YOUTUBE_API_QUOTA_PER_DAY;
 }
 
-
-function showPayment() {
-    global $mysqli, $user, $YOUTUBE_API_QUOTA_PER_DAY;
+function userPayedUntil() {
+    global $mysqli, $user;
 
     $stmt = $mysqli->prepare('SELECT payed_until FROM users WHERE payed_until > NOW() AND id = ?');
     $stmt->bind_param("i", $user['id']);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
-    $payedUntil = isset($data['payed_until']) ? $data['payed_until'] : false;
+    return isset($data['payed_until']) ? $data['payed_until'] : false;
+}
+
+function showPayment() {
+    $payedUntil = userPayedUntil();
     if ($payedUntil === false) {
         echo 'Standard';
     } else {
@@ -447,27 +448,20 @@ function updateVideos($user) {
 
     $nextToken = '';
     while($nextToken !== false) {    
-        $options = array(
-            'http' => array(
-                'method'  => "GET",
-                'header' => "Content-Type: application/json\r\n" .
-                            "Content-Length: 0\r\n" .
-                            "Authorization: Bearer " . $user['access_token'] . "\r\n" .
-                            "User-Agent: YouTool/0.1\r\n"
-            ),
-        );
-        $context = stream_context_create($options);
-        
         $channelVideoList = $user['channel_id'];
         if (substr($user['channel_id'], 0, 2) == 'UC') {
             $channelVideoList = 'UU' . substr($user['channel_id'], 2);
         }
-    
-        $videos = file_get_contents('https://content.googleapis.com/youtube/v3/playlistItems?playlistId=' . $channelVideoList . '&maxResults=50&part=id,snippet&pageToken=' . $nextToken, false, $context);                           
 
-        updateQuotaCost($YOUTUBE_API_QUOTA_LIST_COST);
-   
-        $decoded = json_decode($videos);                            
+        $result = callYoutubeAPI(
+            $user,
+            'https://content.googleapis.com/youtube/v3/playlistItems?playlistId=' . $channelVideoList . '&maxResults=50&part=id,snippet&pageToken=' . $nextToken,
+            'GET',
+            '',
+            $YOUTUBE_API_QUOTA_LIST_COST
+        );
+
+        $decoded = json_decode($result);
         $nextToken = isset($decoded->nextPageToken) ? $decoded->nextPageToken : false;
         foreach ($decoded->items as $video) {
             array_push($videoList, $video);
@@ -475,4 +469,30 @@ function updateVideos($user) {
     }
     
     file_put_contents(__DIR__ . '/../data/videos_' . $user['id'] . '.json', json_encode($videoList));    
+}
+
+function curlCall($url, $method, $headers, $data) {
+    array_push($headers, 'Content-Type: application/json');
+    array_push($headers, 'Content-Length: ' . strlen($data));
+    array_push($headers, 'User-Agent: YouTool/0.1');
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    $response = curl_exec($ch);
+    $curl_error = curl_error($ch);
+    $info = curl_getinfo($ch);
+    curl_close($ch);
+
+    if ($curl_error) {
+        $response = [
+            "status_code" => $info['http_code'],
+            "message" => $curl_error
+        ];
+        return [$info['http_code'], json_encode($response)];
+    } else {
+        return [$info['http_code'], $response];
+    }
 }

@@ -36,35 +36,29 @@ if (isset($data->op) && isset($data->months) && $data->op == 'create-paypal-orde
 
     $postData = json_encode($queryData);
 
-    $context = stream_context_create([
-        'http' => [
-            'method'  => 'POST',
-            'header'  =>
-                "Content-Type: application/json" . "\r\n" .
-                "Authorization: Bearer " . $auth . "\r\n" .
-                //'PayPal-Mock-Response: {"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}' . "\r\n" .
-                //'PayPal-Mock-Response: {"mock_application_codes": "PERMISSION_DENIED"}' . "\r\n" .
-                //'PayPal-Mock-Response: {"mock_application_codes": "INTERNAL_SERVER_ERROR"}' . "\r\n" .
-                "User-Agent: YouTool/0.1\r\n",
-            'content' => $postData
-        ]
-    ]);
+    $headers = [
+        "Authorization: Bearer " . $auth,
+        //'PayPal-Mock-Response: {"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}',
+        //'PayPal-Mock-Response: {"mock_application_codes": "PERMISSION_DENIED"}',
+        //'PayPal-Mock-Response: {"mock_application_codes": "INTERNAL_SERVER_ERROR"}',
+    ];
 
-    $result = @file_get_contents($PAYPAL_ENDPOINT . '/v2/checkout/orders', false, $context);
+    $result = curlCall($PAYPAL_ENDPOINT . '/v2/checkout/orders', 'POST', $headers, $postData);
 
-    if ($result === false) {
-        echo '{"status":"FAILURE", "message": "Unable to create order for payment."}';
+    if ($result[0] < 200 || $result[0] > 299) {
+        http_response_code($result[0]);
+        echo $result[1];
         exit;
     }
 
-    $resultJSON = json_decode($result);
+    $resultJSON = json_decode($result[1]);
 
     $months = $data->months;
 
     $stmt = $mysqli->prepare('INSERT INTO payment (id, userId, quantity, price) VALUES (?,?,?,?)');
     $stmt->bind_param("siii", $resultJSON->id, $user['id'], $months, $MONTHLY_PRICE);
     $stmt->execute();
-    echo $result;
+    echo $result[1];
     exit;
 }
 
@@ -73,27 +67,22 @@ if (isset($data->op) && isset($data->orderId) && $data->op == 'approve-paypal-or
     
     $auth = generatePayPalAccessToken();
 
-    $context = stream_context_create([
-        'http' => [
-            'method'  => 'POST',
-            'header'  =>
-                "Content-Type: application/json" . "\r\n" .
-                "Authorization: Bearer " . $auth . "\r\n" .
-                //'PayPal-Mock-Response: {"mock_application_codes": "INSTRUMENT_DECLINED"}' . "\r\n" .
-                //'PayPal-Mock-Response: {"mock_application_codes": "TRANSACTION_REFUSED"}' . "\r\n" .               
-                //'PayPal-Mock-Response: {"mock_application_codes": "INTERNAL_SERVER_ERROR"}' . "\r\n" .
-                "User-Agent: YouTool/0.1\r\n",
-        ]
-    ]);
+    $headers = [
+        "Authorization: Bearer " . $auth,
+        //'PayPal-Mock-Response: {"mock_application_codes": "INSTRUMENT_DECLINED"}',
+        //'PayPal-Mock-Response: {"mock_application_codes": "TRANSACTION_REFUSED"}',
+        //'PayPal-Mock-Response: {"mock_application_codes": "INTERNAL_SERVER_ERROR"}',
+    ];
 
-    $result = @file_get_contents($PAYPAL_ENDPOINT . '/v2/checkout/orders/' . $data->orderId . '/capture', false, $context);
+    $result = curlCall($PAYPAL_ENDPOINT . '/v2/checkout/orders/' . $data->orderId . '/capture', 'POST', $headers, '');
 
-    if ($result === false) {
-        echo '{"status":"FAILURE", "message": "Unable to complete payment."}';
+    if ($result[0] < 200 || $result[0] > 299) {
+        http_response_code($result[0]);
+        echo $result[1];
         exit;
     }
 
-    $resultJSON = json_decode($result);
+    $resultJSON = json_decode($result[1]);
 
     $payed = $resultJSON->purchase_units[0]->payments->captures[0]->amount->value;
     $status = $resultJSON->status;
@@ -101,7 +90,7 @@ if (isset($data->op) && isset($data->orderId) && $data->op == 'approve-paypal-or
     $id = $resultJSON->id;
 
     $stmt = $mysqli->prepare('UPDATE payment SET payed = ?, status = ?, paymentDate = NOW(), email = ?, response = ? WHERE id = ? AND userId = ?');
-    $stmt->bind_param("issssi", $payed, $status, $email, $result, $id, $user['id']);
+    $stmt->bind_param("issssi", $payed, $status, $email, $result[1], $id, $user['id']);
     $stmt->execute();
 
     $stmt = $mysqli->prepare('SELECT quantity FROM payment WHERE quantity * price = payed AND id = ? AND userId = ?');
@@ -118,7 +107,7 @@ if (isset($data->op) && isset($data->orderId) && $data->op == 'approve-paypal-or
     $stmt->bind_param("iii", $months, $months, $user['id']);
     $stmt->execute();
 
-    echo $result;
+    echo $result[1];
     exit;
 }
 
