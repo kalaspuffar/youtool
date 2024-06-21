@@ -26,7 +26,7 @@ if (isset($_COOKIE['auth_key'])) {
     <link rel="stylesheet" href="css/normalize.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/skeleton.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/custom.css?r=<?php echo $CSS_UPDATE ?>">   
-    <script src="https://www.paypal.com/sdk/js?client-id=AW6-r25iKzEDvpouUw9xUStsrE3AfWLe46bciWovpTRgd9ROzsuBHERSGBbdgx0r3S9Ys3hqtC_CBJZa&components=buttons&currency=USD"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=<?php echo $PAYPAL_CLIENT_ID ?>&components=buttons&currency=USD"></script>
 </head>
 <body>
     <div class="section hero">
@@ -72,13 +72,15 @@ if (isset($_COOKIE['auth_key'])) {
                         <hr/>
                     <?php } ?>
 
-                    <h5>Give write access:</h5>
-                    <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
-                        <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
-                    </a><br/>
-
-                    <?php if (isset($user['id']) && $user['id'] == 1) { ?>
+                    <?php if (isset($user['write_access']) && $user['write_access'] == 0) { ?>
+                        <h5>Give write access:</h5>
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
+                            <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
+                        </a><br/>
                         <hr/>
+                    <?php } ?>
+
+                    <?php //if (isset($user['id']) && $user['id'] == 1) { ?>
 
                         <div id="payment_response"></div>
 
@@ -88,12 +90,12 @@ if (isset($_COOKIE['auth_key'])) {
                         <label>Price: <span id="price_display"><?php echo number_format($MONTHLY_PRICE, 2, '.', ''); ?></span> USD</label>
 
                         <div id="paypal-button-container"></div>
-                    <?php } ?>
+                    <?php //} ?>
                 </div>            
             </div>
         </div>
     </div>
-    <?php if (isset($user['id']) && $user['id'] == 1) { ?>
+    <?php //if (isset($user['id']) && $user['id'] == 1) { ?>
     <script>
         const monthSelect = document.getElementById('months');
         const monthDisplay = document.getElementById('month_display');
@@ -173,6 +175,15 @@ if (isset($_COOKIE['auth_key'])) {
                         `Sorry, your transaction could not be processed...<br><br>${error}` + '</span>';
                 }
             },
+            onCancel(data) {
+                console.log(data);
+            },
+            onError(err) {
+                console.log(err);
+            },
+            onClick() {
+                paymentResponse.innerHTML = '';
+            },            
             style: {
                 layout: 'vertical',
                 color:  'gold',
@@ -181,6 +192,6 @@ if (isset($_COOKIE['auth_key'])) {
             }
         }).render('#paypal-button-container');                    
     </script>                
-    <?php } ?>
+    <?php //} ?>
 </body>
 </html>
