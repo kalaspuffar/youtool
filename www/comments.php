@@ -140,6 +140,7 @@ $all = $res->fetch_row()[0];
                     <button id="response_button">Send</button>
                 </div>
             </div>
+            <?php require_once(__DIR__ . '/../include/footer.php'); ?>
         </div>
     </div>
     <script>

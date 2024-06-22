@@ -115,6 +115,7 @@ $description = isset($data['description']) ? $data['description'] : '';
                     </div>
                 </div>
             </div>
+            <?php require_once(__DIR__ . '/../include/footer.php'); ?>
         </div>
     </div>
 

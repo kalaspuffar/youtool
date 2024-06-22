@@ -161,6 +161,8 @@ $types = [
                     <?php                    
                 }
             ?>
+            </table>
+            <?php require_once(__DIR__ . '/../include/footer.php'); ?>
         </div>
     </div>
 

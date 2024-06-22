@@ -139,6 +139,7 @@ setcookie("category", $selectedCategory, time()+3600);
                     ?>                        
                 </div>
             </div>
+            <?php require_once(__DIR__ . '/../include/footer.php'); ?>
         </div>
     </div>
 </body>

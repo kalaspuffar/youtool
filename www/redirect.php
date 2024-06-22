@@ -91,4 +91,4 @@ if (
 
     $stmt->execute();
 }
-header("Location: https://youtool.app");
+header("Location: https://youtool.app/payments.php");
