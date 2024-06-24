@@ -1,9 +1,11 @@
 <?php
 require_once(__DIR__ . '/../include/head.php');
 
-$stmt = $mysqli->prepare('UPDATE comment SET visible = 0 WHERE id = ? AND userId = ?');
-$stmt->bind_param("ii", $_GET['hide'], $user['id']);
-$stmt->execute();
+if (isset($_GET['hide'])) {
+    $stmt = $mysqli->prepare('UPDATE comment SET visible = 0 WHERE id = ? AND userId = ?');
+    $stmt->bind_param("ii", $_GET['hide'], $user['id']);
+    $stmt->execute();
+}
 
 $stmt = $mysqli->prepare('SELECT count(*) FROM comment WHERE visible = 1 AND parentId IS NULL');
 $stmt->execute();
@@ -82,6 +84,7 @@ $all = $res->fetch_row()[0];
                 </div>
                 <div class="one-half column">
                     <?php 
+                    $commentId = -1;
                     if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                         $stmt = $mysqli->prepare('SELECT * FROM comment WHERE userId = ? AND id = ? AND parentId IS NULL');
                         $stmt->bind_param("ii", $user['id'], $_GET['id']);
@@ -89,6 +92,7 @@ $all = $res->fetch_row()[0];
                         $result = $stmt->get_result();
                         $comment = $result->fetch_assoc();
                         $youtubeId = $videos[$comment['videoId']]['youtubeId'];
+                        $commentId = isset($comment["commentId"]) ? $comment["commentId"] : -1;
                         ?>
                             <div class="item_content">
                                 <div>
@@ -132,12 +136,11 @@ $all = $res->fetch_row()[0];
                                     ?>
                                 </div>
                             </div>
-                        <?php
-                    } 
-                    ?>
 
                     <textarea id="response_text" rows="10" class="u-full-width"></textarea>
                     <button id="response_button">Send</button>
+
+                    <?php } ?>
                 </div>
             </div>
             <?php require_once(__DIR__ . '/../include/footer.php'); ?>
@@ -164,7 +167,7 @@ $all = $res->fetch_row()[0];
         const responseButton = document.getElementById('response_button');
         responseButton.addEventListener('click', function(e) {
             const data = {
-                'commentId': '<?php echo $comment["commentId"] ?>',
+                'commentId': '<?php echo $commentId ?>',
                 'response': responseText.value
             }
 

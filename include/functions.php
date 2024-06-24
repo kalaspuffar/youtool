@@ -471,6 +471,43 @@ function updateVideos($user) {
     file_put_contents(__DIR__ . '/../data/videos_' . $user['id'] . '.json', json_encode($videoList));    
 }
 
+function searchVideos($user, $channelName, $language) {
+    global $YOUTUBE_API_QUOTA_LIST_COST, $YOUTUBE_API_QUOTA_SEARCH_COST;
+
+    $filename = __DIR__ . '/../data/search_' . $user['id'] . '.json';
+    if (file_exists($filename) && filemtime($filename) > time() - 3600) {
+        return;
+    }
+
+    $channelRes = callYoutubeAPI(
+        $user,
+        'https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=' . $channelName,
+        'GET',
+        '',
+        $YOUTUBE_API_QUOTA_LIST_COST
+    );
+    $channelJSON = json_decode($channelRes);
+
+    if (isset($channelJSON->items)) {
+        $videoList = [];
+
+        $result = callYoutubeAPI(
+            $user,
+            'https://www.googleapis.com/youtube/v3/search?order=viewCount&maxResults=25&type=video&part=snippet&relevanceLanguage=' . $language . '&channelId=' . $channelJSON->items[0]->id,
+            'GET',
+            '',
+            $YOUTUBE_API_QUOTA_SEARCH_COST
+        );
+
+        $decoded = json_decode($result);
+        foreach ($decoded->items as $video) {
+            array_push($videoList, $video);
+        }
+
+        file_put_contents(__DIR__ . '/../data/search_' . $user['id'] . '.json', json_encode($videoList));
+    }
+}
+
 function curlCall($url, $method, $headers, $data) {
     array_push($headers, 'Content-Type: application/json');
     array_push($headers, 'Content-Length: ' . strlen($data));

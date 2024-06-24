@@ -183,3 +183,10 @@ select {
   height:20px;
   fill: white;
 }
+
+select {
+  overflow: hidden;
+  white-space: pre;
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+}

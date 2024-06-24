@@ -16,17 +16,13 @@ $script = basename($_SERVER["SCRIPT_FILENAME"], '.php');
     <a class="button <?php echo $script == 'list_videos' ? 'button-primary' : '' ?>" href="list_videos.php">List videos</a>
     <a class="button <?php echo $script == 'category' ? 'button-primary' : '' ?>" href="category.php">Categories</a>
     <a class="button <?php echo $script == 'block' ? 'button-primary' : '' ?>" href="block.php">Block editor</a>
+    <?php
+    if ($user['id'] == 1) {
+    // IN DEVELOPMENT
+    ?>
+    <a class="button <?php echo $script == 'research' ? 'button-primary' : '' ?>" href="research.php">Research</a>
+    <?php } ?>
     <a class="button <?php echo $script == 'comments' ? 'button-primary' : '' ?>" href="comments.php">List comments</a>
-    <a class="button <?php echo $script == 'index' ? 'button-primary' : '' ?>" href="index.php">Payment</a>
+    <a class="button <?php echo $script == 'payments' ? 'button-primary' : '' ?>" href="payments.php">Payment</a>
     <?php }?>
 </div>
-
-<?php
-
-/*
-sb-ea52530553949@personal.example.com
-ivKD-3LI
-
-sb-cnz43s31236862@business.example.com
-0%Q2q';^
-*/

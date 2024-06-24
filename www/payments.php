@@ -5,7 +5,7 @@ require_once(__DIR__ . '/../include/head_optional.php');
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit video</title>
+    <title>Payment</title>
     <meta name="description" content="Small site to handle your YouTube channel.">
     <meta name="author" content="Daniel Persson">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

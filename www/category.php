@@ -44,7 +44,7 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit video</title>
+    <title>Categories</title>
     <meta name="description" content="Small site to handle your YouTube channel.">
     <meta name="author" content="Daniel Persson">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

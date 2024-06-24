@@ -105,3 +105,11 @@ CREATE TABLE payment (
     response TEXT,
     PRIMARY KEY (id)
 );
+
+CREATE TABLE titles (
+    id INT NOT NULL AUTO_INCREMENT,
+    userId INT NOT NULL,
+    categoryId INT NOT NULL,
+    title VARCHAR(255),
+    PRIMARY KEY (id)
+);

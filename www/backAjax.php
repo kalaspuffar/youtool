@@ -94,14 +94,14 @@ if (!isset($data->videoId) || !is_numeric($data->videoId)) {
     die("No videoId supplied");
 }
 if (isset($data->title)) {
-    $stmt = $mysqli->prepare('UPDATE video SET title = ? WHERE id = ? AND userId = ?');
+    $stmt = $mysqli->prepare('UPDATE video SET generated = false, title = ? WHERE id = ? AND userId = ?');
     $stmt->bind_param("sii", $data->title, $data->videoId, $user['id']);
     $stmt->execute();
     echo '{"id":' . $data->videoId . '}';
     exit;
 }
 if (isset($data->description)) {
-    $stmt = $mysqli->prepare('UPDATE video SET description = ? WHERE id = ? AND userId = ?');
+    $stmt = $mysqli->prepare('UPDATE video SET generated = false, description = ? WHERE id = ? AND userId = ?');
     $stmt->bind_param("sii", $data->description, $data->videoId, $user['id']);
     $stmt->execute();
     echo '{"id":' . $data->videoId . '}';

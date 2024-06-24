@@ -43,7 +43,10 @@ if ($blockId != -1) {
 $types = [
     'social' => 'Socials',
     'ads' => 'Advertizement',
-]
+];
+
+$startTime = isset($data['startTime']) ? $data['startTime'] : '';
+$endTime = isset($data['endTime']) ? $data['endTime'] : '';
 
 ?>
 
@@ -76,11 +79,11 @@ $types = [
                     <div class="row">
                         <div class="one-half column">
                             <label for="startTime">Start time:</label>
-                            <input type="datetime-local" id="startTime" name="startTime" value="<?php echo $data['startTime'] ?>" />
+                            <input type="datetime-local" id="startTime" name="startTime" value="<?php echo $startTime ?>" />
                         </div>
                         <div class="one-half column">
                             <label for="endTime">End time:</label>
-                            <input type="datetime-local" id="endTime" name="endTime" value="<?php echo $data['endTime'] ?>" />
+                            <input type="datetime-local" id="endTime" name="endTime" value="<?php echo $endTime ?>" />
                         </div>
                     </div>
                 </div>
@@ -100,7 +103,10 @@ $types = [
                     ?>
                     <select name="category" id="blockCategory" class="u-full-width" multiple style="height: <?php echo $categorySelectHeight ?>px;">
                         <?php
-                            $selectedCategories = explode(',', $data["categories"]);                           
+                            $selectedCategories = [];
+                            if (isset($data["categories"])) {
+                                $selectedCategories = explode(',', $data["categories"]);
+                            }
                             foreach ($categories as $categoryKey => $category) {
                                 $selected = in_array($categoryKey, $selectedCategories) ? 'selected' : '';
                                 echo '<option ' . $selected . ' value="' . $categoryKey . '">' . $category["name"] . '</option>';

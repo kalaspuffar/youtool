@@ -85,6 +85,19 @@ $description = isset($data['description']) ? $data['description'] : '';
                 <div class="one-half column">
                     <div class="u-full-width column">
                         <h4>Video details</h4>
+
+                        <?php
+                        if ($user['id'] == 1) {
+                        // IN DEVELOPMENT
+                        ?>
+                        <div class="row">
+                            <select id="titleSelector" class="u-full-width">
+                                <option value="">None</option>
+                            </select>
+                            <button id="generateTitleButton">Generate title</button>
+                        </div>
+                        <?php } ?>
+
                         <textarea id="videoTitle" rows="2" class="u-full-width"><?php echo $title ?></textarea>
                         <textarea id="videoDesc" rows="29" class="u-full-width" <?php echo $active ? 'disabled' : '' ?>><?php echo $description ?></textarea>
                     </div>
@@ -302,6 +315,37 @@ $description = isset($data['description']) ? $data['description'] : '';
             })
         }
 
+        <?php if ($user['id'] == 1) { ?>
+        // IN DEVELOPMENT
+        const generateTitleButtonEl = document.getElementById('generateTitleButton');
+        const titleSelectorEl = document.getElementById('titleSelector');
+
+        generateTitleButtonEl.addEventListener("click", function(e) {
+            titleSelectorEl.style.border = '2px solid red';
+            const data = {
+                'description': videoDescEl.value,
+            }
+            fetch("assistantAjax.php", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then((res) => res.json()
+            ).then((body) => {
+                for (let i = 0; i < body.choices.length; i++) {
+                    choice = body.choices[i];
+                    var opt = document.createElement('option');
+                    opt.value = choice.message.content.replaceAll('"', '');
+                    opt.innerHTML = choice.message.content.replaceAll('"', '');
+                    titleSelectorEl.appendChild(opt);
+                    titleSelectorEl.style.border = '';
+                }
+            });
+        });
+
+        titleSelectorEl.addEventListener('change', function() {
+            videoTitleEl.value = titleSelectorEl.value;
+            videoTitleSave();
+        });
+        <?php } ?>
     </script>
 </body>
 </html>
