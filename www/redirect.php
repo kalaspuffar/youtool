@@ -53,6 +53,41 @@ if (
     }
     
     $channelData = json_decode($channelResult);
+    if (!isset($channelData->items)) {
+        require_once(__DIR__ . '/../include/head_optional.php');
+        ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Block editor</title>
+    <meta name="description" content="Small site to handle your YouTube channel.">
+    <meta name="author" content="Daniel Persson">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="css/normalize.css?r=<?php echo $CSS_UPDATE ?>">
+    <link rel="stylesheet" href="css/skeleton.css?r=<?php echo $CSS_UPDATE ?>">
+    <link rel="stylesheet" href="css/custom.css?r=<?php echo $CSS_UPDATE ?>">
+</head>
+<body>
+    <div class="section hero">
+        <div class="container">
+            <?php require_once(__DIR__ . '/../include/topbar.php'); ?>
+
+            <div class="row">
+                <h5 style="color:red">Error: No Youtube channel specified, all accounts are connected to a channel so without a channel you will can't continue.</h5>
+                <a class="button primary" href="https://youtool.app/payments.php">Return</a>
+            </div>
+
+            <?php require_once(__DIR__ . '/../include/footer.php'); ?>
+        </div>
+    </div>
+<body>
+<html>
+        <?php
+        exit;
+    }
     $channelId = $channelData->items[0]->id;
 
     $authKey = hash("sha256", random_bytes(2000));
@@ -70,7 +105,10 @@ if (
             $query = 'UPDATE users SET access_token = ?, refresh_token = ?, expire_time = DATE_ADD(NOW(), INTERVAL ? SECOND), write_access = ?, auth_key = ? WHERE channel_id = ?';
         }
     } else {
-        $query = 'INSERT INTO users (access_token, refresh_token, expire_time, write_access, auth_key, channel_id) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
+        $query = 'INSERT INTO users (access_token, expire_time, write_access, auth_key, channel_id) VALUES (?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
+        if (isset($tokenData->refresh_token)) {
+            $query = 'INSERT INTO users (access_token, refresh_token, expire_time, write_access, auth_key, channel_id) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, ?, ?)';
+        }
     }
     $stmt = $mysqli->prepare($query);
     if (isset($tokenData->refresh_token)) {
@@ -83,10 +121,20 @@ if (
             $channelId
         );
     } else {
-        $stmt->bind_param("ss", 
-            $authKey,
-            $channelId
-        );
+        if ($result->num_rows > 0) {
+            $stmt->bind_param("ss",
+                $authKey,
+                $channelId
+            );
+        } else {
+            $stmt->bind_param("siiss",
+                $tokenData->access_token,
+                $tokenData->expires_in,
+                $writeAccess,
+                $authKey,
+                $channelId
+            );
+        }
     }
 
     $stmt->execute();

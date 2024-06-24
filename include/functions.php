@@ -122,7 +122,7 @@ function generateDescription($id, $userId) {
 }
 
 function sendCommentResponse($commentId, $response, $userId) {
-    global $mysqli, $YOUTUBE_API_QUOTA_UPDATE_COST;
+    global $mysqli, $user, $YOUTUBE_API_QUOTA_UPDATE_COST;
 
     $user = getUserAccess($userId);
 
@@ -134,7 +134,7 @@ function sendCommentResponse($commentId, $response, $userId) {
     if ($user['write_access'] != 1) {
         return ["message" => "Write access missing"];
     }
-    if (userPayedUntil() === false) {
+    if (userPayedUntil($user) === false) {
         return ["message" => "Feature requires a subscription"];
     }
 
@@ -332,13 +332,13 @@ function submitDescription($id, $userId) {
     $user = getUserAccess($userId);
 
     if ($user === false) {
-        return ["message" => "Missing access key, login and try again"];
+        return ["status" => "failure", "message" => "Missing access key, login and try again"];
     }
     if ($user['write_access'] != 1) {
-        return ["message" => "Write access missing"];
+        return ["status" => "failure", "message" => "Write access missing"];
     }
-    if (userPayedUntil() === false) {
-        return ["message" => "Feature requires a subscription"];
+    if (userPayedUntil($user) === false) {
+        return ["status" => "failure", "message" => "Feature requires a subscription"];
     }
 
     $stmt = $mysqli->prepare('SELECT * FROM video WHERE id = ? AND userId = ?');
@@ -376,7 +376,7 @@ function submitDescription($id, $userId) {
         $stmt->bind_param("ii", $id, $user['id']);
         $stmt->execute();
 
-        return ["message" => "Published"];
+        return ["status" => "ok", "message" => "Published"];
     }
 }
 
@@ -416,8 +416,8 @@ function showQuota() {
     echo $count . '/' . $YOUTUBE_API_QUOTA_PER_DAY;
 }
 
-function userPayedUntil() {
-    global $mysqli, $user;
+function userPayedUntil($user) {
+    global $mysqli;
 
     $stmt = $mysqli->prepare('SELECT payed_until FROM users WHERE payed_until > NOW() AND id = ?');
     $stmt->bind_param("i", $user['id']);
@@ -428,7 +428,9 @@ function userPayedUntil() {
 }
 
 function showPayment() {
-    $payedUntil = userPayedUntil();
+    global $user;
+
+    $payedUntil = userPayedUntil($user);
     if ($payedUntil === false) {
         echo 'Standard';
     } else {

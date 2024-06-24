@@ -17,7 +17,7 @@ $script = basename($_SERVER["SCRIPT_FILENAME"], '.php');
     <a class="button <?php echo $script == 'category' ? 'button-primary' : '' ?>" href="category.php">Categories</a>
     <a class="button <?php echo $script == 'block' ? 'button-primary' : '' ?>" href="block.php">Block editor</a>
     <?php
-    if ($user['id'] == 1) {
+    if (isset($user['id']) && $user['id'] == 1) {
     // IN DEVELOPMENT
     ?>
     <a class="button <?php echo $script == 'research' ? 'button-primary' : '' ?>" href="research.php">Research</a>

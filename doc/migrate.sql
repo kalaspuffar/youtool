@@ -63,7 +63,7 @@ CREATE TABLE users (
     id INT NOT NULL AUTO_INCREMENT,
     channel_id VARCHAR(60) NOT NULL,
     access_token VARCHAR(255) NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
+    refresh_token VARCHAR(255),
     expire_time TIMESTAMP,
     write_access BOOLEAN NOT NULL DEFAULT 0,
     payed_until TIMESTAMP,
