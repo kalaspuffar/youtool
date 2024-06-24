@@ -94,7 +94,7 @@ $description = isset($data['description']) ? $data['description'] : '';
                             <select id="titleSelector" class="u-full-width">
                                 <option value="">None</option>
                             </select>
-                            <button id="generateTitleButton">Generate title</button>
+                            <button id="generateTitleButton">Generate titles</button>
                         </div>
                         <?php } ?>
 

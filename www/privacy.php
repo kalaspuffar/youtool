@@ -45,12 +45,23 @@ require_once(__DIR__ . '/../include/head_optional.php');
                 <li>You: a person or entity that is registered with YouTool to use the Services.</li>
                 </ul>
                 </p>
+
                 <h5>Information automatically collected</h5>
                 <p>There is some information like your Internet Protocol (IP) address and/or browser and device characteristics — is collected automatically when you visit our platform. This information may be used to connect your computer to the Internet. Other information collected automatically could be a login, e-mail address, password, computer and connection information such as browser plug-in types and versions and time zone setting, operating systems and platforms, purchase history, (we sometimes aggregate with similar information from other Users), the full Uniform Resource Locator (URL) clickstream to, through and from our Website that may include date and time; cookie number; parts of the site you viewed or searched for; and the phone number you used to call our Customer Services. We may also use browser data such as cookies, Flash cookies (also known as Flash Local Shared Objects) or similar data on certain parts of our Website for fraud prevention and other purposes. During your visits, we may use software tools such as JavaScript to measure and collect session information including page response times, download errors, length of visits to certain pages, page interaction information (such as scrolling, clicks, and mouse-overs), and methods used to browse away from the page. We may also collect technical information to help us identify your device for fraud prevention and diagnostic purposes.</p>
                 <p>We automatically collect certain information when you visit, use or navigate the platform. This information does not reveal your specific identity (like your name or contact information) but may include device and usage information, such as your IP address, browser and device characteristics, operating system, language preferences, referring URLs, device name, country, location, information about who and when you use our and other technical information. This information is primarily needed to maintain the security and operation of our platform, and for our internal analytics and reporting purposes.</p>
+
+                <h5>What Youtube data we collect and store.</h5>
+
+                <p>We only store data required for the sites functionallity to enhance your creative journey.</p>
+                <ul>
+                    <li>Titles and descriptions - One of the main features is to generate titles and descriptions of your videos and to operate smoother and automated these are stored.</li>
+                    <li>Comments - Another feature enables you to read and answer comments, which are also stored so we can only surface the ones you've not answered and improve user experience.</li>
+                </ul>
+
                 <h5>Personnel</h5>
                 <p>If you are a YouTool worker or applicant, we collect information you voluntarily provide to us. We use the information collected for Human Resources purposes in order to administer benefits to workers and screen applicants.</p>
                 <p>You may contact us in order to (1) update or correct your information, (2) change your preferences with respect to communications and other information you receive from us, or (3) receive a record of the information we have relating to you. Such updates, corrections, changes and deletions will have no effect on other information that we maintain, or information that we have provided to third parties in accordance with this Privacy Policy prior to such update, correction, change or deletion.</p>
+
                 <h5>Sale of Business</h5>
                 <p>We reserve the right to transfer information to a third party in the event of a sale, merger or other transfer of all or substantially all of the assets of YouTool or any of its Corporate Affiliates (as defined herein), or that portion of YouTool or any of its Corporate Affiliates to which the Service relates, or in the event that we discontinue our business or file a petition or have filed against us a petition in bankruptcy, reorganization or similar proceeding, provided that the third party agrees to adhere to the terms of this Privacy Policy.</p>
 

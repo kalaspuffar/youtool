@@ -25,6 +25,9 @@ foreach ($videos as $video) {
     if ($count >= $allowedVideosToUpdate) {
         break;
     }
-    submitDescription($video['id'], $video['userId']);
+    $result = submitDescription($video['id'], $video['userId']);
+    if ($result['status'] != 'ok') {
+        echo $result['message'];
+    }
     $count++;
 }
