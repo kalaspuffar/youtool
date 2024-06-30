@@ -323,7 +323,7 @@ $description = isset($data['description']) ? $data['description'] : '';
         generateTitleButtonEl.addEventListener("click", function(e) {
             titleSelectorEl.style.border = '2px solid red';
             const data = {
-                'description': videoDescEl.value,
+                'description': headerEl.value,
             }
             fetch("assistantAjax.php", {
                 method: 'POST',

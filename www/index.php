@@ -20,7 +20,9 @@ require_once(__DIR__ . '/../include/head_optional.php');
         <div class="container">
             <?php require_once(__DIR__ . '/../include/topbar.php'); ?>
 
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/aGhMZXyYWfE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <p>Manage your Youtube content</p>
+
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/IzPgbDcY2ns" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
             <div class="row">
                 <a class="button button-primary" href="payments.php">Continue</a>

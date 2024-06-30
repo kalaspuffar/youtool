@@ -58,6 +58,8 @@ require_once(__DIR__ . '/../include/head_optional.php');
                     <li>Comments - Another feature enables you to read and answer comments, which are also stored so we can only surface the ones you've not answered and improve user experience.</li>
                 </ul>
 
+                <p>YouTool's use and transfer to any other app of information received from Google APIs will adhere to <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
                 <h5>Personnel</h5>
                 <p>If you are a YouTool worker or applicant, we collect information you voluntarily provide to us. We use the information collected for Human Resources purposes in order to administer benefits to workers and screen applicants.</p>
                 <p>You may contact us in order to (1) update or correct your information, (2) change your preferences with respect to communications and other information you receive from us, or (3) receive a record of the information we have relating to you. Such updates, corrections, changes and deletions will have no effect on other information that we maintain, or information that we have provided to third parties in accordance with this Privacy Policy prior to such update, correction, change or deletion.</p>

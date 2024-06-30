@@ -21,7 +21,7 @@ if ($result->num_rows > 0) {
     $stmt->execute();    
 } else {
     $stmt = $mysqli->prepare(
-        'SELECT UNIQUE c.categoryId FROM block as b LEFT JOIN category_to_block AS c ON (b.id = c.blockId)'.
+        'SELECT UNIQUE c.categoryId, b.id FROM block as b LEFT JOIN category_to_block AS c ON (b.id = c.blockId)'.
         ' WHERE changed = true'
     );
     $stmt->execute();
@@ -30,9 +30,11 @@ if ($result->num_rows > 0) {
     
     $categories = [];
     foreach ($data as $categoryRes) {
-        array_push($categories, $categoryRes['categoryId']);
+        if ($categoryRes['categoryId'] != NULL) {
+            array_push($categories, $categoryRes['categoryId']);
+        }        
     }
-    
+
     if (count($categories) > 0) {
         $stmt = $mysqli->prepare(
             'UPDATE video SET generated = false' .

@@ -110,6 +110,7 @@ if (isset($_GET['titleId'])) {
                     <table>
                         <tr>
                             <th>Pick</th>
+                            <th>Category</th>
                             <th>Title</th>
                         </tr>
                     <?php

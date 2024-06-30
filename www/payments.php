@@ -54,21 +54,21 @@ require_once(__DIR__ . '/../include/head_optional.php');
                 <div class="one-third column price-card">
                     <?php if (!isset($user['id'])) { ?>
                         <h5>Give read access:</h5>
-                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline">
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=<?php echo $YOUTUBE_API_ID ?>&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline">
                             <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
                         </a>
                         <hr/>
                     <?php } ?>
 
-                    <?php if (isset($user['write_access']) && $user['write_access'] == 0) { ?>
+                    <?php if (!isset($user['id']) || (isset($user['write_access']) && $user['write_access'] == 0)) { ?>
                         <h5>Give write access:</h5>
-                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=326206426889-v2nr3cr60pie5o6rdhv11schbrfl5340.apps.googleusercontent.com&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=<?php echo $YOUTUBE_API_ID ?>&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
                             <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
                         </a><br/>
                         <hr/>
                     <?php } ?>
 
-                    <?php //if (isset($user['id']) && $user['id'] == 1) { ?>
+                    <?php if (isset($user['id'])) { ?>
 
                         <div id="payment_response"></div>
 
@@ -78,13 +78,13 @@ require_once(__DIR__ . '/../include/head_optional.php');
                         <label>Price: <span id="price_display"><?php echo number_format($MONTHLY_PRICE, 2, '.', ''); ?></span> USD</label>
 
                         <div id="paypal-button-container"></div>
-                    <?php //} ?>
+                    <?php } ?>
                 </div>            
             </div>
             <?php require_once(__DIR__ . '/../include/footer.php'); ?>
         </div>
     </div>
-    <?php //if (isset($user['id']) && $user['id'] == 1) { ?>
+    <?php if (isset($user['id'])) { ?>
     <script>
         const monthSelect = document.getElementById('months');
         const monthDisplay = document.getElementById('month_display');
@@ -181,6 +181,6 @@ require_once(__DIR__ . '/../include/head_optional.php');
             }
         }).render('#paypal-button-container');                    
     </script>                
-    <?php //} ?>
+    <?php } ?>
 </body>
 </html>

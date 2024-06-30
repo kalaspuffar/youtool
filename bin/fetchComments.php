@@ -9,6 +9,10 @@ $users = $result->fetch_all(MYSQLI_ASSOC);
 foreach ($users as $user) {
     $user = getUserAccess($user['id']);
 
+    if ($user == false) {
+        continue;
+    }
+
     $commentList = [];
 
     $nextToken = '';
@@ -23,6 +27,10 @@ foreach ($users as $user) {
         );
 
         $decoded = json_decode($result);
+        if (!isset($decoded->items)) {
+            $nextToken = false;
+            continue;
+        }
         $nextToken = isset($decoded->nextPageToken) ? $decoded->nextPageToken : false;
         foreach ($decoded->items as $comment) {
             array_push($commentList, $comment);

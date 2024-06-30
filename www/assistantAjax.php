@@ -42,7 +42,7 @@ if (isset($data->description)) {
             ],
             [
                 "role" => "user",
-                "content" => $data->description
+                "content" => "Description: " . $data->description
             ]
         ],
         "n" => 10,
