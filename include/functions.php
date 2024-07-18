@@ -249,7 +249,7 @@ function updateComment($userId, $comment) {
             ') VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?, ?, 1)'
     );
     $timestamp = strtotime($comment->snippet->topLevelComment->snippet->publishedAt);
-    $stmt->bind_param("iisssisi", 
+    $stmt->bind_param("iisssisi",
         $userId,
         $videoData['id'],
         $comment->id,
@@ -312,13 +312,15 @@ function loadVideo($youtubeId, $userId) {
     }
 
     $videoData = json_decode($result);
+    $timestamp = strtotime($videoData->items[0]->snippet->publishedAt);
 
-    $stmt = $mysqli->prepare('UPDATE video SET title = ?, description = ?, youtubeCategoryId = ? WHERE youtubeId = ? AND userId = ?');
-    $stmt->bind_param("ssssi", 
+    $stmt = $mysqli->prepare('UPDATE video SET title = ?, description = ?, youtubeCategoryId = ?, youtubePublishedAt = FROM_UNIXTIME(?) WHERE youtubeId = ? AND userId = ?');
+    $stmt->bind_param("sssisi",
         $videoData->items[0]->snippet->title, 
         $videoData->items[0]->snippet->description, 
         $videoData->items[0]->snippet->categoryId,
-        $youtubeId, 
+        $timestamp,
+        $youtubeId,
         $userId
     );
     $stmt->execute();
@@ -443,7 +445,7 @@ function updateVideos($user) {
 
     $filename = __DIR__ . '/../data/videos_' . $user['id'] . '.json';
     if (file_exists($filename) && filemtime($filename) > time() - 3600) {
-        exit;
+        return;
     }
 
     $videoList = [];

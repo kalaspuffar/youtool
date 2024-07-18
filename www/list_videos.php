@@ -43,6 +43,12 @@ setcookie("category", $selectedCategory, time()+3600);
                 <div class="u-full-width column">
                     <div class="row">
                         <form method="GET" action="#">
+                            <?php
+                            if ($user['id'] == 1) {
+                            // IN DEVELOPMENT
+                            ?>
+                            <input type="text" id="searchBox" placeholder="Search"/>
+                            <?php } ?>
                             <select name="filter" onchange="javascript:submit()">
                                 <option value="">Active</option>
                                 <option <?php echo $filter == "inactive" ? "selected" : "" ?> value="inactive">Not Active</option>
@@ -100,22 +106,22 @@ setcookie("category", $selectedCategory, time()+3600);
                             $internal = 1;
                         }
                         if ($filter == 'generating') {
-                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND generated = false AND userId = ?');
+                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND generated = false AND userId = ? ORDER BY youtubePublishedAt DESC');
                             $stmt->bind_param("i", $user['id']);
                             $stmt->execute();    
                         } else if ($filter == 'publishing') {
-                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND published = false AND userId = ?');
+                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = true AND published = false AND userId = ? ORDER BY youtubePublishedAt DESC');
                             $stmt->bind_param("i", $user['id']);
                             $stmt->execute();    
                         } else if ($selectedCategory == '') {
-                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND internal = ? AND userId = ?');
+                            $stmt = $mysqli->prepare('SELECT * FROM video WHERE active = ? AND internal = ? AND userId = ? ORDER BY youtubePublishedAt DESC');
                             $stmt->bind_param("iii", $active, $internal, $user['id']);
                             $stmt->execute();    
                         } else {
                             $stmt = $mysqli->prepare(
                                 'SELECT * FROM video WHERE active = ? AND userId = ? AND id IN (' .
                                     'SELECT videoId FROM category_to_video WHERE categoryId = ?' .
-                                ')'
+                                ') ORDER BY youtubePublishedAt DESC'
                             );
                             $stmt->bind_param("iii", $active, $user['id'], $selectedCategory);
                             $stmt->execute();
@@ -123,22 +129,76 @@ setcookie("category", $selectedCategory, time()+3600);
                         $result = $stmt->get_result();
 
                         ?>
-                        <p>Found videos: <?php echo $result->num_rows ?></p>
+                        <div id="videoList">
+                            <p>Found videos: <?php echo $result->num_rows ?></p>
 
-                        <?php
-
-                        $items = $result->fetch_all(MYSQLI_ASSOC);
-                        foreach ($items as $video) {
-                            ?>
-                            <a href="edit_video.php?videoId=<?php echo $video["youtubeId"] ?>">
-                                <img src="https://i.ytimg.com/vi/<?php echo $video["youtubeId"] ?>/default.jpg"/>
-                            </a>
                             <?php
-                        }
-                    }
-                    ?>                        
+
+                            $items = $result->fetch_all(MYSQLI_ASSOC);
+                            foreach ($items as $video) {
+                                ?>
+                                <a href="edit_video.php?videoId=<?php echo $video["youtubeId"] ?>">
+                                    <img src="https://i.ytimg.com/vi/<?php echo $video["youtubeId"] ?>/default.jpg"/>
+                                </a>
+                                <?php
+                            }
+                        ?>
+                        </div>
+                    <?php } ?>
                 </div>
             </div>
+
+            <?php
+            if ($user['id'] == 1) {
+            // IN DEVELOPMENT
+            ?>
+            <script>
+
+                function makeDelay(ms) {
+                    var timer = 0;
+                    return function(el, callback){
+                        el.style.border = '3px solid red';
+                        clearTimeout (timer);
+                        timer = setTimeout(callback, ms);
+                    };
+                };
+                var delay = makeDelay(400);
+
+                const searchBoxEl = document.getElementById('searchBox');
+                const videoListEl = document.getElementById('videoList');
+                searchBoxEl.addEventListener('keyup', function() {delay(searchBoxEl, searchVideos.bind())});
+                searchBoxEl.addEventListener('paste', function() {delay(searchBoxEl, searchVideos.bind())});
+
+                function searchVideos() {
+                    const data = {
+                        'search': searchBoxEl.value
+                    }
+                    fetch("backAjax.php", {
+                        method: 'POST',
+                        body: JSON.stringify(data)
+                    }).then((res) => res.json()
+                    ).then((body) => {
+                        videoListEl.innerHTML = '';
+                        const foundTitleEl = document.createElement('p');
+                        foundTitleEl.innerHTML = 'Found videos: ' + body.length;
+                        videoListEl.appendChild(foundTitleEl);
+
+                        for (let i = 0; i < body.length; i++) {
+                            video = body[i];
+                            const videoLinkEl = document.createElement('a');
+                            videoLinkEl.href = 'edit_video.php?videoId=' + video['youtubeId'];
+                            const videoImgEl = document.createElement('img');
+                            videoImgEl.src = 'https://i.ytimg.com/vi/' + video['youtubeId'] + '/default.jpg';
+                            videoLinkEl.appendChild(videoImgEl);
+                            videoListEl.appendChild(videoLinkEl);
+                        }
+
+                        searchBoxEl.style.border = '';
+                    })
+                }
+            </script>
+            <?php } ?>
+
             <?php require_once(__DIR__ . '/../include/footer.php'); ?>
         </div>
     </div>

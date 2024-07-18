@@ -23,6 +23,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $blocks = $result->fetch_all(MYSQLI_ASSOC);
 
+$snippetName = '';
 $snippet = '';
 $type = '';
 if ($blockId != -1) {
@@ -35,6 +36,7 @@ if ($blockId != -1) {
     $stmt->execute();
     $result = $stmt->get_result();    
     $data = $result->fetch_assoc();    
+    $snippetName = $data["name"];
     $snippet = $data["snippet"];
     $type = $data["type"];
 }
@@ -74,6 +76,7 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
                     <div class="u-full-width column">
                         <h4>Snippet: <?php echo $blockId ?></h4>
                         <input id="blockId" value="" type="hidden">
+                        <input id="snippetName"  type="text" placeholder="Name" value="<?php echo $snippetName ?>" class="u-full-width">
                         <textarea id="snippetText" rows="10" class="u-full-width"><?php echo $snippet ?></textarea>
                     </div>
                     <div class="row">
@@ -152,7 +155,7 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
                     ?>
                     <tr>
                         <td><?php echo $block["id"] ?></td>
-                        <td><?php echo substr($block["snippet"], 0, 15) ?></td>
+                        <td><?php echo $block["name"] ?></td>
                         <td><?php echo $types[$block["type"]] ?></td>
                         <td><?php echo implode(', ', $connectedCategories) ?></td>
                         <td><?php echo $block["startTime"] ?></td>
@@ -186,6 +189,8 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
         const saveButtonEl = document.getElementById('saveButton');
 
         const snippetTextEl = document.getElementById('snippetText');
+        const snippetNameEl = document.getElementById('snippetName');
+        
         const blockTypeEl = document.getElementById('blockType');
         const blockCategoryEl = document.getElementById('blockCategory');
 
@@ -207,7 +212,8 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
                 'startTime': startTimeEl.value,
                 'endTime': endTimeEl.value,
                 'categoryOverride': categoryOverrideEl.checked,
-                'snippet': snippetTextEl.value
+                'snippet': snippetTextEl.value,
+                'snippetName': snippetNameEl.value
             }
             console.log(data);
             fetch("backAjax.php", {

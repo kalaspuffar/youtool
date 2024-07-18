@@ -14,7 +14,7 @@ $allowedVideosToUpdate = (int)($quotaLeft / $YOUTUBE_API_QUOTA_UPDATE_COST);
 $stmt = $mysqli->prepare(
     'SELECT id, userId FROM video WHERE active = true AND published = false AND userId IN (' . 
         'SELECT id FROM users WHERE write_access = 1 AND payed_until > NOW()'
-    . ')'
+    . ') ORDER BY youtubePublishedAt DESC'
 );
 $stmt->execute();
 $result = $stmt->get_result();

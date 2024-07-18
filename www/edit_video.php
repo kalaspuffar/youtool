@@ -223,6 +223,7 @@ $description = isset($data['description']) ? $data['description'] : '';
             }).then((res) => res.json()
             ).then((body) => {
                 videoDescEl.value = body.description;
+                videoDescSave();
             });
         }
         function publishVideo() {

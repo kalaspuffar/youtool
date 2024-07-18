@@ -51,7 +51,20 @@ if (isset($data->commentId) && isset($data->response)) {
     exit;
 }
 
-if (isset($data->snippet)) {
+if (isset($data->search)) {
+    $searchTerm = "%$data->search%";
+    $stmt = $mysqli->prepare('SELECT youtubeId FROM video WHERE (title LIKE ? OR description LIKE ?) AND userId = ?');
+    $stmt->bind_param("ssi", $searchTerm, $searchTerm, $user['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $videos = $result->fetch_all(MYSQLI_ASSOC);
+
+    echo json_encode($videos);
+    exit;
+}
+
+
+if (isset($data->snippet) && isset($data->snippetName)) {
     if (!isset($data->blockId) || !is_numeric($data->blockId)) {
         die("No blockId supplied");
     }
@@ -59,14 +72,15 @@ if (isset($data->snippet)) {
     $startTime = $data->startTime ? $data->startTime : null;
     $endTime = $data->endTime ? $data->endTime : null;
     if ($data->blockId != -1) {
-        $stmt = $mysqli->prepare('UPDATE block SET snippet = ?, type = ?, startTime = ?, endTime = ?, override_categories = ?, changed = 1 WHERE id = ?');
-        $stmt->bind_param("ssssii", $data->snippet, $data->type, $startTime, $endTime, $override, $data->blockId);
+        $stmt = $mysqli->prepare('UPDATE block SET snippet = ?, name = ?, type = ?, startTime = ?, endTime = ?, override_categories = ?, changed = 1 WHERE id = ? AND userId = ?');
+        $stmt->bind_param("sssssiii", $data->snippet, $data->snippetName, $data->type, $startTime, $endTime, $override, $data->blockId, $user['id']);
         $stmt->execute();
         $blockId = $data->blockId;
     } else {
-        $stmt = $mysqli->prepare('INSERT INTO block (snippet, type, startTime, endTime, override_categories, userId, changed) VALUES (?, ?, ?, ?, ?, ?, 1)');
-        $stmt->bind_param("ssssii", 
-            $data->snippet, 
+        $stmt = $mysqli->prepare('INSERT INTO block (snippet, name, type, startTime, endTime, override_categories, userId, changed) VALUES (?, ?, ?, ?, ?, ?, ?, 1)');
+        $stmt->bind_param("sssssii",
+            $data->snippet,
+            $data->snippetName,
             $data->type, 
             $startTime, 
             $endTime, 
