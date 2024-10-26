@@ -17,7 +17,7 @@ $systemPrompt = $TITLE_PROMPT;
 if (isset($data->description)) {
     $examples = [];
 
-    $stmt = $mysqli->prepare('SELECT * FROM titles WHERE userId = ?');
+    $stmt = $mysqli->prepare('SELECT * FROM titles WHERE userId = ? ORDER BY RAND() LIMIT 5');
     $stmt->bind_param("i", $user['id']);
     $stmt->execute();
     $titleRes = $stmt->get_result();
@@ -27,18 +27,14 @@ if (isset($data->description)) {
         array_push($examples, $title['title']);
     }
 
-    $examplePrompt = 'Here are some examples: ' . implode(",", $examples);
+    $examplePrompt = 'Here are some examples separated with pipes: ' . implode("|", $examples);
 
     $request = [
         "model" => "gpt-4o",
         "messages" => [
             [
                 "role" => "system",
-                "content" => $systemPrompt
-            ],
-            [
-                "role" => "system",
-                "content" => $examplePrompt
+                "content" => $systemPrompt . $examplePrompt
             ],
             [
                 "role" => "user",

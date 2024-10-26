@@ -14,11 +14,17 @@ $stmt->bind_param("i", $user['id']);
 $stmt->execute();
 $categories = fetchAssocAll($stmt, 'id');
 
+$extraQuery = '';
+if (isseT($_GET['active'])) {
+    $extraQuery = ' AND active = true ';
+}
+
 $stmt = $mysqli->prepare(
     'SELECT b.*, GROUP_CONCAT(c.categoryId) as categories FROM '.
     'block as b LEFT JOIN category_to_block as c ON (b.id = c.blockId) ' . 
-    'WHERE type NOT IN ("header", "footer") GROUP BY b.id'
+    'WHERE type NOT IN ("header", "footer") ' .$extraQuery. ' AND userId = ? GROUP BY b.id'
 );
+$stmt->bind_param("i", $user['id']);
 $stmt->execute();
 $result = $stmt->get_result();
 $blocks = $result->fetch_all(MYSQLI_ASSOC);
@@ -132,6 +138,15 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
                     </div>
                 </div>
             </div>
+
+            <label for="showOnlyActive">
+                <?php
+                    $showOnlyActive = isset($_GET['active']) ? 'checked' : '';
+                ?>
+                <input type="checkbox" id="showOnlyActive" <?php echo $showOnlyActive ?>>
+                <span class="label-body">Show only active</span>
+            </label>
+
             <table class="u-full-width">
                 <tr>
                     <th>Id</th>
@@ -197,10 +212,17 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
         const startTimeEl = document.getElementById('startTime');
         const endTimeEl = document.getElementById('endTime');
         const categoryOverrideEl = document.getElementById('categoryOverride');
+        const showOnlyActiveEl = document.getElementById('showOnlyActive');
+        
         
 
         createButtonEl.addEventListener('click', function(e) { blockSave(-1) });
         saveButtonEl.addEventListener('click', function(e) { blockSave(<?php echo $blockId ?>) });
+        showOnlyActiveEl.addEventListener('click', function(e) { reloadActive(); });
+
+        function reloadActive() {
+            location.href = showOnlyActiveEl.checked ? '?active=true' : '?';
+        }
 
         function blockSave(blockId) {
             var blockCategoryOptions = blockCategoryEl.selectedOptions;

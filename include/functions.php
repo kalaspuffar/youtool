@@ -99,7 +99,7 @@ function generateDescription($id, $userId) {
     
     if (count($categories) > 0) {
         $stmt = $mysqli->prepare(
-            'SELECT * FROM block WHERE userId = ? AND id IN ' . 
+            'SELECT * FROM block WHERE userId = ? AND active = true AND id IN ' . 
             '(SELECT blockId FROM category_to_block WHERE categoryId in (' . implode(',', $categories) . '))'
         );
         $stmt->bind_param("i", $userId);        
