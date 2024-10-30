@@ -32,6 +32,7 @@ $blocks = $result->fetch_all(MYSQLI_ASSOC);
 $snippetName = '';
 $snippet = '';
 $type = '';
+$adsId = -1;
 if ($blockId != -1) {
     $stmt = $mysqli->prepare(
         'SELECT b.*, GROUP_CONCAT(c.categoryId) as categories FROM ' . 
@@ -45,6 +46,7 @@ if ($blockId != -1) {
     $snippetName = $data["name"];
     $snippet = $data["snippet"];
     $type = $data["type"];
+    $adsId = $data["adsId"];
 }
 
 
@@ -95,6 +97,30 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
                             <input type="datetime-local" id="endTime" name="endTime" value="<?php echo $endTime ?>" />
                         </div>
                     </div>
+                    <?php if ($user['id'] == 1) { ?>
+                    <div class="row">
+                        <select name="adsId" id="adsId" class="u-full-width">
+                            <option value="-1">None</option>
+                        <?php
+                            $stmt = $mysqli->prepare('SELECT * FROM ads ORDER BY startTime DESC');
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+
+                            $items = $result->fetch_all(MYSQLI_ASSOC);
+                            foreach ($items as $ad) {
+
+                                $selected_ad = $ad['id'] == $adsId ? 'selected' : '';
+                        ?>
+                            <option <?php echo $selected_ad ?> value="<?php echo $ad['id'] ?>"><?php echo $ad['advertiserName'] . ' - '. $ad['name'] ?></option>
+                        <?php } ?>
+                        </select>
+
+                        <button id="updateAdsTimes">Update Times</button>
+
+                        <div id="adsData">
+                        </div>
+                    </div>
+                    <?php } ?>
                 </div>
                 <div class="one-half column">
                     <h4>Settings</h4>
@@ -208,17 +234,20 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
         
         const blockTypeEl = document.getElementById('blockType');
         const blockCategoryEl = document.getElementById('blockCategory');
+        const adsIdEl = document.getElementById('adsId');
 
         const startTimeEl = document.getElementById('startTime');
         const endTimeEl = document.getElementById('endTime');
         const categoryOverrideEl = document.getElementById('categoryOverride');
         const showOnlyActiveEl = document.getElementById('showOnlyActive');
-        
-        
-
+        const adsDataEl = document.getElementById('adsData');
+        const updateAdsTimesEl  = document.getElementById('updateAdsTimes');
+                
         createButtonEl.addEventListener('click', function(e) { blockSave(-1) });
         saveButtonEl.addEventListener('click', function(e) { blockSave(<?php echo $blockId ?>) });
         showOnlyActiveEl.addEventListener('click', function(e) { reloadActive(); });
+        adsIdEl.addEventListener('change', function(e) { updateAdsData(e.target.value); });
+        updateAdsTimesEl.addEventListener('click', function(e) { updateAdTimes(<?php echo $blockId ?>); });
 
         function reloadActive() {
             location.href = showOnlyActiveEl.checked ? '?active=true' : '?';
@@ -229,6 +258,7 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
             var categoryValues = Array.from(blockCategoryOptions).map(({ value }) => value);
             const data = {
                 'blockId': blockId,
+                'adsId': adsIdEl.value,
                 'type': blockTypeEl.value,
                 'category': categoryValues,
                 'startTime': startTimeEl.value,
@@ -237,7 +267,37 @@ $endTime = isset($data['endTime']) ? $data['endTime'] : '';
                 'snippet': snippetTextEl.value,
                 'snippetName': snippetNameEl.value
             }
-            console.log(data);
+            fetch("backAjax.php", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then((res) => res.json()
+            ).then((body) => {
+                location.href = '?blockId=' + body.id;
+            })
+        }
+
+        function updateAdsData(adsId) {
+            var blockCategoryOptions = blockCategoryEl.selectedOptions;
+            var categoryValues = Array.from(blockCategoryOptions).map(({ value }) => value);
+            const data = {
+                'op': 'fetchAdData',
+                'adsId': adsId
+            }
+            fetch("backAjax.php", {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then((res) => res.text()
+            ).then((body) => {
+                adsDataEl.innerHTML = body;
+            })
+        }
+        updateAdsData(<?php echo $adsId ?>);
+
+        function updateAdTimes(blockId) {
+            const data = {
+                'op': 'updateAdTimes',
+                'blockId': blockId
+            }
             fetch("backAjax.php", {
                 method: 'POST',
                 body: JSON.stringify(data)

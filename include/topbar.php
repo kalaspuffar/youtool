@@ -21,6 +21,7 @@ $script = basename($_SERVER["SCRIPT_FILENAME"], '.php');
     // IN DEVELOPMENT
     ?>
     <a class="button <?php echo $script == 'research' ? 'button-primary' : '' ?>" href="research.php">Research</a>
+    <a class="button <?php echo $script == 'list_impact' ? 'button-primary' : '' ?>" href="list_impact.php">Impact</a>
     <?php } ?>
     <a class="button <?php echo $script == 'comments' ? 'button-primary' : '' ?>" href="comments.php">List comments</a>
     <a class="button <?php echo $script == 'payments' ? 'button-primary' : '' ?>" href="payments.php">Payment</a>

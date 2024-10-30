@@ -111,10 +111,13 @@ function generateDescription($id, $userId) {
     $typeOrder = ['header', 'ads', 'social', 'footer'];
 
     $snippets = [];
+    $ads = 0;    
     foreach ($typeOrder as $type) {
         foreach ($blocks as $block) {
             if ($block['type'] == $type) {
+                if ($type == 'ads' && $ads == 2) continue;
                 array_push($snippets, $block['snippet']);
+                if ($type == 'ads') $ads++;
             }
         }
     }
@@ -536,4 +539,42 @@ function curlCall($url, $method, $headers, $data) {
     } else {
         return [$info['http_code'], $response];
     }
+}
+
+function updateAdTimes($blockId) {
+    global $mysqli;
+
+    $stmt = $mysqli->prepare('SELECT * FROM block WHERE id = ?');
+    $stmt->bind_param("i", $blockId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res->num_rows != 0) {
+        $blockData = $res->fetch_assoc();
+
+        $stmt = $mysqli->prepare('SELECT * FROM ads WHERE id = ?');
+        $stmt->bind_param("i", $blockData['adsId']);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $adsData = $res->fetch_assoc();
+
+        if (
+            $adsData['startTime'] != $blockData['startTime'] ||
+            $adsData['endTime'] != $blockData['endTime']
+        ) {
+ 
+            $startTime = null;
+            if (!empty($adsData['startTime'])) {
+                $startTime = strtotime($adsData['startTime']);
+            }
+            $endTime = null;
+            if (!empty($adsData['endTime'])) {
+                $endTime = strtotime($adsData['endTime']);
+            }
+            $stmt = $mysqli->prepare(
+                'UPDATE block SET startTime = FROM_UNIXTIME(?), endTime = FROM_UNIXTIME(?), changed = true WHERE id = ?'
+            );
+            $stmt->bind_param("iii", $startTime, $endTime, $blockData['id']);
+            $stmt->execute();
+        }
+    }    
 }

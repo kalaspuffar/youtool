@@ -28,7 +28,8 @@ CREATE TABLE category_to_video (
 
 CREATE TABLE block (
     id INT NOT NULL AUTO_INCREMENT,
-    userId INT NOT NULL,
+    userId INT NOT NULL,     
+    adsId INT,
     type VARCHAR(60) NOT NULL,
     startTime TIMESTAMP,
     endTime TIMESTAMP,
@@ -113,5 +114,18 @@ CREATE TABLE titles (
     userId INT NOT NULL,
     categoryId INT NOT NULL,
     title VARCHAR(255),
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE ads (
+    id INT NOT NULL AUTO_INCREMENT,
+    portalId VARCHAR(255) NOT NULL,
+    advertiserName VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    startTime TIMESTAMP,
+    endTime TIMESTAMP,
+    snippet TEXT,
+    trackingLink VARCHAR(255),
+    landingPage VARCHAR(255),
     PRIMARY KEY (id)
 );

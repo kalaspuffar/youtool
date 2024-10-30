@@ -3,6 +3,39 @@ require_once(__DIR__ . '/../include/head.php');
 
 $data = json_decode(file_get_contents('php://input'));
 
+
+if (isset($data->op) && isset($data->blockId) && $data->op == 'updateAdTimes') {
+    updateAdTimes($data->blockId);
+
+    echo '{"id":' . $data->blockId . '}';
+    exit;
+}
+
+if (isset($data->op) && $data->op == 'fetchAdData') {
+    if (!isset($data->adsId)) {
+        exit;
+    }
+    $stmt = $mysqli->prepare('SELECT * FROM ads WHERE id = ?');
+    $stmt->bind_param("i", $data->adsId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    if ($res->num_rows != 0) {
+        $adsData = $res->fetch_assoc();
+        echo '<div style="margin-bottom: 10px; padding: 5px; border-radius: 10px; color: black; background-color:white; border: 1px solid #666">';
+        echo $adsData['snippet'];
+        echo '<br><br>';
+        echo $adsData['trackingLink'];
+        echo '<br><br><a href="';
+        echo $adsData['landingPage'];
+        echo '">';
+        echo $adsData['landingPage'];
+        echo '</a>';
+        echo '</div>';
+    }
+    exit;
+}
+
 if (isset($data->op) && isset($data->videoId) && $data->op == 'activate') {
     $stmt = $mysqli->prepare('UPDATE video SET active = !active, internal = false WHERE id = ? AND userId = ?');
     $stmt->bind_param("ii", $data->videoId, $user['id']);
@@ -72,13 +105,14 @@ if (isset($data->snippet) && isset($data->snippetName)) {
     $startTime = $data->startTime ? $data->startTime : null;
     $endTime = $data->endTime ? $data->endTime : null;
     if ($data->blockId != -1) {
-        $stmt = $mysqli->prepare('UPDATE block SET snippet = ?, name = ?, type = ?, startTime = ?, endTime = ?, override_categories = ?, changed = 1 WHERE id = ? AND userId = ?');
-        $stmt->bind_param("sssssiii", $data->snippet, $data->snippetName, $data->type, $startTime, $endTime, $override, $data->blockId, $user['id']);
+        $stmt = $mysqli->prepare('UPDATE block SET adsId = ?, snippet = ?, name = ?, type = ?, startTime = ?, endTime = ?, override_categories = ?, changed = 1 WHERE id = ? AND userId = ?');
+        $stmt->bind_param("isssssiii", $data->adsId, $data->snippet, $data->snippetName, $data->type, $startTime, $endTime, $override, $data->blockId, $user['id']);
         $stmt->execute();
         $blockId = $data->blockId;
     } else {
-        $stmt = $mysqli->prepare('INSERT INTO block (snippet, name, type, startTime, endTime, override_categories, userId, changed) VALUES (?, ?, ?, ?, ?, ?, ?, 1)');
-        $stmt->bind_param("sssssii",
+        $stmt = $mysqli->prepare('INSERT INTO block (adsId, snippet, name, type, startTime, endTime, override_categories, userId, changed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)');
+        $stmt->bind_param("isssssii",
+            $data->adsId,
             $data->snippet,
             $data->snippetName,
             $data->type, 
