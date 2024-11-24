@@ -354,7 +354,9 @@ function submitDescription($id, $userId) {
 
     if (empty($video["title"]) || empty($video["youtubeCategoryId"])) {
         $videoDataFromYoutube = loadVideo($video["youtubeId"], $userId);
-        $video['title'] = $videoDataFromYoutube->items[0]->snippet->title;
+        if (empty($video["title"])) {
+            $video['title'] = $videoDataFromYoutube->items[0]->snippet->title;
+        }
         $video['youtubeCategoryId'] = $videoDataFromYoutube->items[0]->snippet->categoryId;
     }
 

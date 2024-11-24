@@ -15,7 +15,10 @@ require_once(__DIR__ . '/../include/head_optional.php');
     <link rel="stylesheet" href="css/skeleton.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/custom.css?r=<?php echo $CSS_UPDATE ?>">   
     <script src="https://www.paypal.com/sdk/js?client-id=<?php echo $PAYPAL_CLIENT_ID ?>&components=buttons&currency=USD"></script>
-</head>
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="manifest" href="images/site.webmanifest">   </head>
 <body>
     <div class="section hero">
         <div class="container">

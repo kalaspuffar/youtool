@@ -67,6 +67,10 @@ $description = isset($data['description']) ? $data['description'] : '';
     <link rel="stylesheet" href="css/normalize.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/skeleton.css?r=<?php echo $CSS_UPDATE ?>">
     <link rel="stylesheet" href="css/custom.css?r=<?php echo $CSS_UPDATE ?>">   
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="manifest" href="images/site.webmanifest">
 </head>
 <body <?php echo $background ?>>
     <div class="section hero">
