@@ -110,6 +110,8 @@ function generateDescription($id, $userId) {
 
     $typeOrder = ['header', 'ads', 'social', 'footer'];
 
+    shuffle($blocks);
+
     $snippets = [];
     $ads = 0;    
     foreach ($typeOrder as $type) {
