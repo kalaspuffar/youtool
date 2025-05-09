@@ -1,11 +1,15 @@
 <?php
 require_once(__DIR__ . '/../include/functions.php');
 
-$url = "https://$IMPACT_SID:$IMPACT_TOKEN@api.impact.com/Mediapartners/$IMPACT_SID/Ads?Type=TEXT_LINK";
-$response = curlCall($url, 'GET', ['Accept: application/json'], "");
+$url = "https://api.impact.com/Mediapartners/$IMPACT_SID/Ads?Type=TEXT_LINK";
+
+$headers = [
+    'Accept: application/json',
+    'Authorization: Basic ' . base64_encode("$IMPACT_SID:$IMPACT_TOKEN")
+];
+$response = curlCall($url, 'GET', $headers, "");
 
 $json = json_decode($response[1]);
-
 
 foreach ($json->Ads as $ad) {
     $startTime = null;

@@ -40,7 +40,7 @@ function getUserAccess($userId) {
         ),
     );
     $context = stream_context_create($options);
-    $tokenResult = file_get_contents('https://oauth2.googleapis.com/token', false, $context);
+    $tokenResult = @file_get_contents('https://oauth2.googleapis.com/token', false, $context);
     if ($tokenResult === false) {
         return false;
     }

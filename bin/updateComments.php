@@ -8,6 +8,8 @@ $result = $stmt->get_result();
 $users = $result->fetch_all(MYSQLI_ASSOC);
 
 foreach ($users as $user) {
+    if (!file_exists(__DIR__ . '/../data/comments_' . $user['id'] . '.json')) continue;
+
     $json = file_get_contents(__DIR__ . '/../data/comments_' . $user['id'] . '.json');
     $jsonComments = json_decode($json);
 
