@@ -2,3 +2,4 @@ etc/
 .htaccess
 .htpasswd
 data/
+www/mediakit/*.html

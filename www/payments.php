@@ -36,6 +36,7 @@ require_once(__DIR__ . '/../include/head_optional.php');
                         <li>Categorise videos and blocks</li>
                         <li>Auto generate description</li>
                         <li>Read and hide comments</li>
+                        <li>Media kit</li>
                     </ul>
                 </div>
                 <div class="one-third column selected-price-card">
@@ -49,6 +50,7 @@ require_once(__DIR__ . '/../include/head_optional.php');
                         <li>Categorise videos and blocks</li>
                         <li>Auto generate description</li>
                         <li>Read and hide comments</li>
+                        <li>Media kit</li>
                         <li>Automaticly update videos</li>
                         <li>Answer comments</li>
                         <li>Generate titles (In-development)</li>
@@ -57,22 +59,22 @@ require_once(__DIR__ . '/../include/head_optional.php');
                 <div class="one-third column price-card">
                     <?php if (!isset($user['id'])) { ?>
                         <h5>Give read access:</h5>
-                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=<?php echo $YOUTUBE_API_ID ?>&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline">
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=<?php echo $YOUTUBE_API_ID ?>&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.readonly%20
+https://www.googleapis.com/auth/yt-analytics.readonly&response_type=code&access_type=offline">
                             <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
                         </a>
-                        <hr/>
                     <?php } ?>
 
                     <?php if (!isset($user['id']) || (isset($user['write_access']) && $user['write_access'] == 0)) { ?>
+                        <hr/>
                         <h5>Give write access:</h5>
-                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=<?php echo $YOUTUBE_API_ID ?>&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl&response_type=code&access_type=offline">
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=<?php echo $YOUTUBE_API_ID ?>&redirect_uri=https://youtool.app/redirect.php&scope=https://www.googleapis.com/auth/youtube.force-ssl%20
+https://www.googleapis.com/auth/yt-analytics.readonly&response_type=code&access_type=offline">
                             <img src="images/web_dark_rd_ctn.svg" id="signin_button"/>
                         </a><br/>
-                        <hr/>
                     <?php } ?>
 
                     <?php if (isset($user['id'])) { ?>
-
                         <div id="payment_response"></div>
 
                         <label for="tick">Pay for usage <span id="month_display">1</span> months</label>

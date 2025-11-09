@@ -46,7 +46,7 @@ function getUserAccess($userId) {
     }
     $tokenData = json_decode($tokenResult);
 
-    $writeAccess = $tokenData->scope == 'https://www.googleapis.com/auth/youtube.force-ssl' ? 1 : 0;
+    $writeAccess = str_contains($tokenData->scope, 'https://www.googleapis.com/auth/youtube.force-ssl') ? 1 : 0;
     $stmt = $mysqli->prepare(
         'UPDATE users SET access_token = ?, expire_time = DATE_ADD(NOW(), INTERVAL ? SECOND), write_access = ? WHERE id = ?'
     );
@@ -242,7 +242,7 @@ function updateComment($userId, $comment) {
     $res = $stmt->get_result();
 
     if ($res->num_rows == 0) {
-        echo $comment->snippet->videoId . "\n";
+        //echo $comment->snippet->videoId . "\n";
         return;
     }
 
@@ -401,8 +401,9 @@ function updateQuotaCost($cost) {
 }
 
 function callYoutubeAPI($user, $url, $method, $postdata, $cost) {
+    $host = parse_url($url, PHP_URL_HOST);
     $headers = [
-        'Host: www.googleapis.com',
+        'Host: ' . $host,
         'Authorization: Bearer ' . $user['access_token']
     ];
 

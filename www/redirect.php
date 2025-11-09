@@ -2,8 +2,8 @@
 require_once(__DIR__ . '/../include/functions.php');
 
 if (
-    $_REQUEST['scope'] == 'https://www.googleapis.com/auth/youtube.readonly' ||
-    $_REQUEST['scope'] == 'https://www.googleapis.com/auth/youtube.force-ssl'
+    str_contains($_REQUEST['scope'], 'https://www.googleapis.com/auth/youtube.readonly') ||
+    str_contains($_REQUEST['scope'], 'https://www.googleapis.com/auth/youtube.force-ssl')
 ) {
     $keyStr = file_get_contents($YOUTUBE_API_JSON);
     $keyData = json_decode($keyStr);
@@ -93,7 +93,7 @@ if (
     $authKey = hash("sha256", random_bytes(2000));
     setcookie("auth_key", $authKey, time()+3600);
 
-    $writeAccess = $_REQUEST['scope'] == 'https://www.googleapis.com/auth/youtube.force-ssl' ? 1 : 0;
+    $writeAccess = str_contains($_REQUEST['scope'], 'https://www.googleapis.com/auth/youtube.force-ssl') ? 1 : 0;
 
     $stmt = $mysqli->prepare('SELECT * FROM users WHERE channel_id = ?');
     $stmt->bind_param("s", $channelId);

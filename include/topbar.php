@@ -25,5 +25,6 @@ $script = basename($_SERVER["SCRIPT_FILENAME"], '.php');
     <?php } ?>
     <a class="button <?php echo $script == 'comments' ? 'button-primary' : '' ?>" href="comments.php">List comments</a>
     <a class="button <?php echo $script == 'payments' ? 'button-primary' : '' ?>" href="payments.php">Payment</a>
+    <a class="button" target="_blank" href="mediakit/<?php echo $user['channel_id'] ?>.html">Media Kit</a>
     <?php }?>
 </div>

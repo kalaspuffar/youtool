@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaKit</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        .statistic_point {
+            background-color: aquamarine;
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
+        }
+
+        .pie_wrapper {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <article>
+            <header>
+                <h1>[%channel_name%]</h1>
+            </header>
+            [%channel_desc%]
+        </article>
+
+        <h2>Channel statistics</h2>
+
+        <div class="grid">
+            <div>
+                <article>
+                    <header>
+                        <h3>Subscribers</h3>
+                    </header>
+                    [%channel_subscribers%]
+                </article>
+            </div>
+            <div>
+                <article>
+                    <header>
+                        <h3>Views</h3>
+                    </header>
+                    [%channel_views%]
+                </article>
+            </div>
+            <div>
+                <article>
+                    <header>
+                        <h3>Videos</h3>
+                    </header>
+                    [%channel_videos%]
+                </article>
+            </div>
+        </div>
+
+        <h2>Previous month demographics</h2>
+
+        <div class="grid">
+            <div>
+                <article>
+                    <header>
+                        <h3>Country</h3>
+                    </header>
+                    <div class="pie_wrapper">
+                        [%statistic_country%]
+                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #eab308;"></div>
+                            </td>                            
+                            <td>[%statistic_country_1%]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #3b82f6;"></div>
+                            </td>                            
+                            <td>[%statistic_country_2%]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #22c55e;"></div>
+                            </td>                            
+                            <td>[%statistic_country_3%]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #9ca3af;"></div>
+                            </td>                            
+                            <td>Other</td>
+                        </tr>
+                    </table>
+                </article>
+            </div>
+            <div>
+                <article>
+                    <header>
+                        <h3>Gender</h3>
+                    </header>
+                    <div class="pie_wrapper">
+                        [%statistic_gender%]
+                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #ec4899;"></div>
+                            </td>
+                            <td>Female</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #3b82f6;"></div>
+                            </td>
+                            <td>Male</td>
+                        </tr>
+                    </table>
+                </article>
+            </div>
+            <div>
+                <article>
+                    <header>
+                        <h3>Age</h3>
+                    </header>
+                    <div class="pie_wrapper">
+                        [%statistic_age%]
+                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #eab308;"></div>
+                            </td>                            
+                            <td>[%statistic_age_1%]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #3b82f6;"></div>
+                            </td>                            
+                            <td>[%statistic_age_2%]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #22c55e;"></div>
+                            </td>                            
+                            <td>[%statistic_age_3%]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="statistic_point" style="background-color: #9ca3af;"></div>
+                            </td>                            
+                            <td>Other</td>
+                        </tr>
+                    </table>
+                </article>
+            </div>
+        </div>
+        
+        <h2>Latest videos</h2>
+        
+        <div class="grid">
+            [%videos%]
+        </div>        
+    </main>
+</body>
+</html>
